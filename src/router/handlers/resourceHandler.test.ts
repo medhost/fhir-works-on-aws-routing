@@ -73,7 +73,7 @@ describe('SUCCESS CASES: Testing create, read, update, delete of resources with 
         expectedValidPatient.id = id;
 
         // OPERATE
-        const getResponse: any = await resourceHandler.read('Patient', id);
+        const getResponse: any = await resourceHandler.read('Patient', id, defaultTenantId);
 
         // CHECK
         expect(getResponse.meta).toBeDefined();
@@ -293,7 +293,7 @@ describe('ERROR CASES: Testing create, read, update, delete of resources with de
         const id = uuidv4();
         try {
             // OPERATE
-            await resourceHandler.read('Patient', id);
+            await resourceHandler.read('Patient', id, defaultTenantId);
         } catch (e) {
             // CHECK
             console.log(e);
