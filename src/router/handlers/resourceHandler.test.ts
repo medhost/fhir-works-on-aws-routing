@@ -36,7 +36,7 @@ const enum SEARCH_PAGINATION_PARAMS {
     COUNT = '_count',
 }
 
-describe('SUCCESS CASES: Testing create, read, update, delete of resources', () => {
+describe('SUCCESS CASES: Testing create, read, update, delete of resources with default tenant', () => {
     const resourceHandler = new ResourceHandler(
         DynamoDbDataService,
         ElasticSearchService,
@@ -44,6 +44,7 @@ describe('SUCCESS CASES: Testing create, read, update, delete of resources', () 
         '4.0.1',
         'https://API_URL.com',
     );
+    const defaultTenantId = '';
 
     test('create: patient', async () => {
         // BUILD
@@ -53,7 +54,7 @@ describe('SUCCESS CASES: Testing create, read, update, delete of resources', () 
         delete expectedValidPatient.id;
 
         // OPERATE
-        const createResponse = await resourceHandler.create('Patient', validPatient);
+        const createResponse = await resourceHandler.create('Patient', validPatient, defaultTenantId);
 
         // CHECK
         // TODO spy on DS and ensure ID being passed in is not the expectedValidPatient.id
@@ -90,7 +91,7 @@ describe('SUCCESS CASES: Testing create, read, update, delete of resources', () 
         expectedValidPatient.id = id;
 
         // OPERATE
-        const getResponse: any = await resourceHandler.vRead('Patient', id, vid);
+        const getResponse: any = await resourceHandler.vRead('Patient', id, vid, defaultTenantId);
 
         // CHECK
         expect(getResponse.meta).toBeDefined();
@@ -107,7 +108,7 @@ describe('SUCCESS CASES: Testing create, read, update, delete of resources', () 
         expectedValidPatient.id = id;
 
         // OPERATE
-        const updateResponse = await resourceHandler.update('Patient', id, validPatient);
+        const updateResponse = await resourceHandler.update('Patient', id, validPatient, defaultTenantId);
 
         // CHECK
         // TODO spy on DS and ensure ID being passed in is the expectedValidPatient.id & versionId is set to 2
@@ -126,7 +127,7 @@ describe('SUCCESS CASES: Testing create, read, update, delete of resources', () 
         expectedValidPatient.id = id;
 
         // OPERATE
-        const patchResponse = await resourceHandler.patch('Patient', id, validPatient);
+        const patchResponse = await resourceHandler.patch('Patient', id, validPatient, defaultTenantId);
 
         // CHECK
         // TODO spy on DS and ensure ID being passed in is the expectedValidPatient.id & versionId is set to 2
@@ -142,12 +143,12 @@ describe('SUCCESS CASES: Testing create, read, update, delete of resources', () 
         // BUILD
         const id = uuidv4();
         // OPERATE
-        const deleteResponse = await resourceHandler.delete('Patient', id);
+        const deleteResponse = await resourceHandler.delete('Patient', id, defaultTenantId);
         // CHECK
         expect(deleteResponse).toEqual(OperationsGenerator.generateSuccessfulDeleteOperation(1));
     });
 });
-describe('ERROR CASES: Testing create, read, update, delete of resources', () => {
+describe('ERROR CASES: Testing create, read, update, delete of resources with default tenant', () => {
     const dbError = new Error('Some database error');
     const mockedDataService: Persistence = class {
         static updateCreateSupported: boolean = false;
@@ -215,7 +216,7 @@ describe('ERROR CASES: Testing create, read, update, delete of resources', () =>
         '4.0.1',
         'https://API_URL.com',
     );
-
+    const defaultTenantId = '';
     beforeEach(() => {
         // Ensures that for each test, we test the assertions in the catch block
         expect.hasAssertions();
@@ -225,7 +226,7 @@ describe('ERROR CASES: Testing create, read, update, delete of resources', () =>
         // BUILD
         try {
             // OPERATE
-            await resourceHandler.create('Patient', invalidPatient);
+            await resourceHandler.create('Patient', invalidPatient, defaultTenantId);
         } catch (e) {
             // CHECK
             expect(e).toEqual(
@@ -240,7 +241,7 @@ describe('ERROR CASES: Testing create, read, update, delete of resources', () =>
         // BUILD
         try {
             // OPERATE
-            await resourceHandler.create('Patient', validPatient);
+            await resourceHandler.create('Patient', validPatient, defaultTenantId);
         } catch (e) {
             // CHECK
             expect(e).toEqual(dbError);
@@ -252,7 +253,7 @@ describe('ERROR CASES: Testing create, read, update, delete of resources', () =>
         const id = uuidv4();
         try {
             // OPERATE
-            await resourceHandler.update('Patient', id, invalidPatient);
+            await resourceHandler.update('Patient', id, invalidPatient, defaultTenantId);
         } catch (e) {
             // CHECK
             expect(e).toEqual(
@@ -268,7 +269,7 @@ describe('ERROR CASES: Testing create, read, update, delete of resources', () =>
         const id = uuidv4();
         try {
             // OPERATE
-            await resourceHandler.update('Patient', id, validPatient);
+            await resourceHandler.update('Patient', id, validPatient, defaultTenantId);
         } catch (e) {
             // CHECK
             expect(e).toEqual(new ResourceNotFoundError('Patient', id));
@@ -280,7 +281,7 @@ describe('ERROR CASES: Testing create, read, update, delete of resources', () =>
         const id = uuidv4();
         try {
             // OPERATE
-            await resourceHandler.patch('Patient', id, validPatient);
+            await resourceHandler.patch('Patient', id, validPatient, defaultTenantId);
         } catch (e) {
             // CHECK
             expect(e).toEqual(dbError);
@@ -306,7 +307,7 @@ describe('ERROR CASES: Testing create, read, update, delete of resources', () =>
         const vid = '1';
         try {
             // OPERATE
-            await resourceHandler.vRead('Patient', id, vid);
+            await resourceHandler.vRead('Patient', id, vid, defaultTenantId);
         } catch (e) {
             // CHECK
             expect(e).toEqual(new ResourceVersionNotFoundError('Patient', id, vid));
@@ -318,7 +319,7 @@ describe('ERROR CASES: Testing create, read, update, delete of resources', () =>
         const id = uuidv4();
         try {
             // OPERATE
-            await resourceHandler.delete('Patient', id);
+            await resourceHandler.delete('Patient', id, defaultTenantId);
         } catch (e) {
             // CHECK
             expect(e).toEqual(new ResourceNotFoundError('Patient', id));
