@@ -67,7 +67,7 @@ export function generateServerlessRouter(
     // AuthZ
     app.use(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
         try {
-            const requestInformation = getRequestInformation(req.method, req.path);
+            const requestInformation = getRequestInformation(req.method, req.proxy);
             // Clean auth header (remove 'Bearer ')
             req.headers.authorization = cleanAuthHeader(req.headers.authorization);
             res.locals.userIdentity = await fhirConfig.auth.authorization.verifyAccessToken({
@@ -136,6 +136,7 @@ export function generateServerlessRouter(
         // Set up Resource for each generic resource
         genericFhirResources.forEach(async (resourceType: string) => {
             app.use(`/${resourceType}`, genericRoute.router);
+            app.use(`/tenant/:tenantId/${resourceType}`, genericRoute.router);
         });
     }
 

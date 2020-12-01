@@ -34,9 +34,10 @@ export default class GenericResourceRoute {
                 '/:id',
                 RouteHelper.wrapAsync(async (req: express.Request, res: express.Response) => {
                     // Get the ResourceType looks like '/Patient'
-                    const resourceType = req.baseUrl.substr(1);
+                    const resourceType = req.proxy.split('/')[0];
                     const { id } = req.params;
-                    const response = await this.handler.read(resourceType, id);
+                    const { tenantId } = req;
+                    const response = await this.handler.read(resourceType, id, tenantId);
                     const updatedReadResponse = await this.authService.authorizeAndFilterReadResponse({
                         operation: 'read',
                         userIdentity: res.locals.userIdentity,
@@ -59,9 +60,10 @@ export default class GenericResourceRoute {
                 '/:id/_history/:vid',
                 RouteHelper.wrapAsync(async (req: express.Request, res: express.Response) => {
                     // Get the ResourceType looks like '/Patient'
-                    const resourceType = req.baseUrl.substr(1);
+                    const resourceType = req.proxy.split('/')[0];
                     const { id, vid } = req.params;
-                    const response = await this.handler.vRead(resourceType, id, vid);
+                    const { tenantId } = req;
+                    const response = await this.handler.vRead(resourceType, id, vid, tenantId);
                     const updatedReadResponse = await this.authService.authorizeAndFilterReadResponse({
                         operation: 'vread',
                         userIdentity: res.locals.userIdentity,
@@ -84,7 +86,7 @@ export default class GenericResourceRoute {
                 '/_history',
                 RouteHelper.wrapAsync(async (req: express.Request, res: express.Response) => {
                     // Get the ResourceType looks like '/Patient'
-                    const resourceType = req.baseUrl.substr(1);
+                    const resourceType = req.proxy.split('/')[0];
                     const searchParamQuery = req.query;
                     const response = await this.handler.typeHistory(resourceType, searchParamQuery);
                     const updatedReadResponse = await this.authService.authorizeAndFilterReadResponse({
@@ -103,7 +105,7 @@ export default class GenericResourceRoute {
                 '/:id/_history',
                 RouteHelper.wrapAsync(async (req: express.Request, res: express.Response) => {
                     // Get the ResourceType looks like '/Patient'
-                    const resourceType = req.baseUrl.substr(1);
+                    const resourceType = req.proxy.split('/')[0];
                     const searchParamQuery = req.query;
                     const { id } = req.params;
                     const response = await this.handler.instanceHistory(resourceType, id, searchParamQuery);
@@ -123,7 +125,7 @@ export default class GenericResourceRoute {
                 '/',
                 RouteHelper.wrapAsync(async (req: express.Request, res: express.Response) => {
                     // Get the ResourceType looks like '/Patient'
-                    const resourceType = req.baseUrl.substr(1);
+                    const resourceType = req.proxy.split('/')[0];
                     const searchParamQuery = req.query;
 
                     const allowedResourceTypes = await this.authService.getAllowedResourceTypesForOperation({
@@ -152,8 +154,9 @@ export default class GenericResourceRoute {
                 '/',
                 RouteHelper.wrapAsync(async (req: express.Request, res: express.Response) => {
                     // Get the ResourceType looks like '/Patient'
-                    const resourceType = req.baseUrl.substr(1);
+                    const resourceType = req.proxy.split('/')[0];
                     const { body } = req;
+                    const { tenantId } = req;
 
                     await this.authService.isWriteRequestAuthorized({
                         resourceBody: body,
@@ -161,7 +164,7 @@ export default class GenericResourceRoute {
                         userIdentity: res.locals.userIdentity,
                     });
 
-                    const response = await this.handler.create(resourceType, body);
+                    const response = await this.handler.create(resourceType, body, tenantId);
                     if (response.meta) {
                         res.set({ ETag: `W/"${response.meta.versionId}"`, 'Last-Modified': response.meta.lastUpdated });
                     }
@@ -175,9 +178,10 @@ export default class GenericResourceRoute {
             this.router.put(
                 '/:id',
                 RouteHelper.wrapAsync(async (req: express.Request, res: express.Response) => {
-                    const resourceType = req.baseUrl.substr(1);
+                    const resourceType = req.proxy.split('/')[0];
                     const { id } = req.params;
                     const { body } = req;
+                    const { tenantId } = req;
 
                     if (body.id === null || body.id !== id) {
                         throw new createError.BadRequest(
@@ -190,7 +194,7 @@ export default class GenericResourceRoute {
                         userIdentity: res.locals.userIdentity,
                     });
 
-                    const response = await this.handler.update(resourceType, id, body);
+                    const response = await this.handler.update(resourceType, id, body, tenantId);
                     if (response.meta) {
                         res.set({ ETag: `W/"${response.meta.versionId}"`, 'Last-Modified': response.meta.lastUpdated });
                     }
@@ -204,7 +208,7 @@ export default class GenericResourceRoute {
             this.router.patch(
                 '/:id',
                 RouteHelper.wrapAsync(async (req: express.Request, res: express.Response) => {
-                    const resourceType = req.baseUrl.substr(1);
+                    const resourceType = req.proxy.split('/')[0];
                     const { id } = req.params;
                     const { body } = req;
 
@@ -219,7 +223,8 @@ export default class GenericResourceRoute {
                         userIdentity: res.locals.userIdentity,
                     });
 
-                    const response = await this.handler.patch(resourceType, id, body);
+                    const { tenantId } = req;
+                    const response = await this.handler.patch(resourceType, id, body, tenantId);
                     if (response.meta) {
                         res.set({ ETag: `W/"${response.meta.versionId}"`, 'Last-Modified': response.meta.lastUpdated });
                     }
@@ -234,9 +239,10 @@ export default class GenericResourceRoute {
                 '/:id',
                 RouteHelper.wrapAsync(async (req: express.Request, res: express.Response) => {
                     // Get the ResourceType looks like '/Patient'
-                    const resourceType = req.baseUrl.substr(1);
+                    const { tenantId } = req;
+                    const resourceType = req.proxy.split('/')[0];
                     const { id } = req.params;
-                    const readResponse = await this.handler.read(resourceType, id);
+                    const readResponse = await this.handler.read(resourceType, id, tenantId);
 
                     await this.authService.isWriteRequestAuthorized({
                         resourceBody: readResponse,
@@ -244,7 +250,7 @@ export default class GenericResourceRoute {
                         userIdentity: res.locals.userIdentity,
                     });
 
-                    const response = await this.handler.delete(resourceType, id);
+                    const response = await this.handler.delete(resourceType, id, tenantId);
                     res.send(response);
                 }),
             );
