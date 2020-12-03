@@ -109,6 +109,7 @@ export function generateServerlessRouter(
                     fhirConfig.auth.authorization,
                 );
                 app.use(`/${resourceEntry[0]}`, route.router);
+                app.use(`/tenant/:tenantId/${resourceEntry[0]}`, route.router);
             }
         });
     }
