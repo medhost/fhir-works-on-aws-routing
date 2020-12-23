@@ -355,6 +355,7 @@ describe('Testing search', () => {
 
         return resourceHandler;
     };
+    const defaultTenantId = '';
 
     beforeEach(() => {
         // Ensures that for each test, we test the assertions in the catch block
@@ -380,10 +381,12 @@ describe('Testing search', () => {
         });
 
         // OPERATE
-        const searchResponse: any = await resourceHandler.typeSearch('Patient', { name: 'Henry' }, [
+        const searchResponse: any = await resourceHandler.typeSearch(
             'Patient',
-            'Practitioner',
-        ]);
+            { name: 'Henry' },
+            ['Patient', 'Practitioner'],
+            defaultTenantId,
+        );
 
         // CHECK
         expect(ElasticSearchService.typeSearch).toHaveBeenCalledWith({
@@ -427,7 +430,7 @@ describe('Testing search', () => {
         });
 
         // OPERATE
-        const searchResponse: any = await resourceHandler.typeSearch('Patient', { name: 'Henry' }, []);
+        const searchResponse: any = await resourceHandler.typeSearch('Patient', { name: 'Henry' }, [], defaultTenantId);
 
         // CHECK
         expect(searchResponse.resourceType).toEqual('Bundle');
@@ -451,7 +454,7 @@ describe('Testing search', () => {
         ElasticSearchService.typeSearch = jest.fn().mockRejectedValue(new Error('Boom!!'));
         try {
             // OPERATE
-            await resourceHandler.typeSearch('Patient', { name: 'Henry' }, []);
+            await resourceHandler.typeSearch('Patient', { name: 'Henry' }, [], defaultTenantId);
         } catch (e) {
             // CHECK
             expect(e).toEqual(new Error('Boom!!'));
@@ -487,6 +490,7 @@ describe('Testing search', () => {
                     [SEARCH_PAGINATION_PARAMS.COUNT]: 1,
                 },
                 [],
+                defaultTenantId,
             );
 
             // CHECK
@@ -543,6 +547,7 @@ describe('Testing search', () => {
                     [SEARCH_PAGINATION_PARAMS.COUNT]: 1,
                 },
                 [],
+                defaultTenantId,
             );
 
             // CHECK
@@ -599,6 +604,7 @@ describe('Testing search', () => {
                     [SEARCH_PAGINATION_PARAMS.COUNT]: 1,
                 },
                 [],
+                defaultTenantId,
             );
 
             // CHECK

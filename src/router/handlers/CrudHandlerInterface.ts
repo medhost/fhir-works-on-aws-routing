@@ -10,7 +10,7 @@ export default interface CrudHandlerInterface {
     read(resourceType: string, id: string, tenantId: string): any;
     vRead(resourceType: string, id: string, vid: string, tenantId: string): any;
     delete(resourceType: string, id: string, tenantId: string): any;
-    typeSearch(resourceType: string, searchParams: any, allowedResourceTypes: string[]): any;
+    typeSearch(resourceType: string, searchParams: any, allowedResourceTypes: string[], tenantId: string): any;
     typeHistory(resourceType: string, searchParams: any): any;
     instanceHistory(resourceType: string, id: string, searchParams: any): any;
 }

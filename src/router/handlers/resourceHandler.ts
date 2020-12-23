@@ -55,12 +55,13 @@ export default class ResourceHandler implements CrudHandlerInterface {
         return patchResponse.resource;
     }
 
-    async typeSearch(resourceType: string, queryParams: any, allowedResourceTypes: string[]) {
+    async typeSearch(resourceType: string, queryParams: any, allowedResourceTypes: string[], tenantId: string) {
         const searchResponse = await this.searchService.typeSearch({
             resourceType,
             queryParams,
             baseUrl: this.serverUrl,
             allowedResourceTypes,
+            tenantId,
         });
         return BundleGenerator.generateBundle(
             this.serverUrl,
