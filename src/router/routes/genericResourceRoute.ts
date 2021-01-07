@@ -127,7 +127,7 @@ export default class GenericResourceRoute {
                     // Get the ResourceType looks like '/Patient'
                     const resourceType = req.proxy.split('/')[0];
                     const searchParamQuery = req.query;
-
+                    const { tenantId } = req;
                     const allowedResourceTypes = await this.authService.getAllowedResourceTypesForOperation({
                         operation: 'search-type',
                         userIdentity: res.locals.userIdentity,
@@ -137,6 +137,7 @@ export default class GenericResourceRoute {
                         resourceType,
                         searchParamQuery,
                         allowedResourceTypes,
+                        tenantId,
                     );
                     const updatedReadResponse = await this.authService.authorizeAndFilterReadResponse({
                         operation: 'search-type',
