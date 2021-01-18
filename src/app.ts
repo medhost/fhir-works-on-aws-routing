@@ -78,7 +78,7 @@ export function generateServerlessRouter(
             next();
         } catch (e) {
             next(e);
-        }feture
+        }
     });
 
     // Export
