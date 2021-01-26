@@ -318,7 +318,7 @@ const getSupportedGenericResources = (
     supportedResources: string[],
     fhirVersion: FhirVersion,
 ): string[] => {
-    const customFhirConfig = clone(r4FhirConfigGeneric);
+    const customFhirConfig = r4FhirConfigGeneric();
     customFhirConfig.profile.genericResource = genRes;
     const configHandler = new ConfigHandler(customFhirConfig, supportedResources);
     return configHandler.getGenericResources(fhirVersion);
@@ -643,6 +643,10 @@ describe('ERROR Cases: Bundle not authorized', () => {
             async getAllowedResourceTypesForOperation(request) {
                 return [];
             },
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            async getSearchFilterBasedOnIdentity(request) {
+                return [];
+            },
         };
         const bundleHandlerWithStubbedAuthZ = new BundleHandler(
             DynamoDbBundleService,
@@ -680,6 +684,10 @@ describe('ERROR Cases: Bundle not authorized', () => {
             async isAccessBulkDataJobAllowed(request: AccessBulkDataJobRequest) {},
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             async getAllowedResourceTypesForOperation(request) {
+                return [];
+            },
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            async getSearchFilterBasedOnIdentity(request) {
                 return [];
             },
         };
