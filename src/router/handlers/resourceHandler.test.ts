@@ -43,6 +43,7 @@ describe('SUCCESS CASES: Testing create, read, update, delete of resources with 
         DynamoDbDataService,
         ElasticSearchService,
         stubs.history,
+        stubs.passThroughAuthz,
         '4.0.1',
         'https://API_URL.com',
     );
@@ -50,7 +51,7 @@ describe('SUCCESS CASES: Testing create, read, update, delete of resources with 
 
     test('create: patient', async () => {
         // BUILD
-        const expectedValidPatient = { ...validPatient };
+        const expectedValidPatient = { ...validPatient } as any;
 
         // The patient that was created has a randomly generated id, which will not match the expectedValidPatient's id
         delete expectedValidPatient.id;
@@ -227,6 +228,7 @@ describe('ERROR CASES: Testing create, read, update, delete of resources with de
         mockedDataService,
         ElasticSearchService,
         stubs.history,
+        stubs.passThroughAuthz,
         '4.0.1',
         'https://API_URL.com',
     );
@@ -349,6 +351,7 @@ describe('Testing search', () => {
             DynamoDbDataService,
             ElasticSearchService,
             stubs.history,
+            stubs.passThroughAuthz,
             '4.0.1',
             'https://API_URL.com',
         );
@@ -385,6 +388,7 @@ describe('Testing search', () => {
             'Patient',
             { name: 'Henry' },
             ['Patient', 'Practitioner'],
+            {},
             defaultTenantId,
         );
 
@@ -396,6 +400,7 @@ describe('Testing search', () => {
                 name: 'Henry',
             },
             resourceType: 'Patient',
+            searchFilters: [],
         });
         expect(searchResponse.resourceType).toEqual('Bundle');
         expect(searchResponse.meta).toBeDefined();
@@ -430,7 +435,7 @@ describe('Testing search', () => {
         });
 
         // OPERATE
-        const searchResponse: any = await resourceHandler.typeSearch('Patient', { name: 'Henry' }, [], defaultTenantId);
+        const searchResponse: any = await resourceHandler.typeSearch('Patient', { name: 'Henry' }, [], {}, defaultTenantId);
 
         // CHECK
         expect(searchResponse.resourceType).toEqual('Bundle');
@@ -454,7 +459,7 @@ describe('Testing search', () => {
         ElasticSearchService.typeSearch = jest.fn().mockRejectedValue(new Error('Boom!!'));
         try {
             // OPERATE
-            await resourceHandler.typeSearch('Patient', { name: 'Henry' }, [], defaultTenantId);
+            await resourceHandler.typeSearch('Patient', { name: 'Henry' }, [], {}, defaultTenantId);
         } catch (e) {
             // CHECK
             expect(e).toEqual(new Error('Boom!!'));
@@ -490,6 +495,7 @@ describe('Testing search', () => {
                     [SEARCH_PAGINATION_PARAMS.COUNT]: 1,
                 },
                 [],
+                {},
                 defaultTenantId,
             );
 
@@ -547,6 +553,7 @@ describe('Testing search', () => {
                     [SEARCH_PAGINATION_PARAMS.COUNT]: 1,
                 },
                 [],
+                {},
                 defaultTenantId,
             );
 
@@ -604,6 +611,7 @@ describe('Testing search', () => {
                     [SEARCH_PAGINATION_PARAMS.COUNT]: 1,
                 },
                 [],
+                {},
                 defaultTenantId,
             );
 
@@ -648,6 +656,7 @@ describe('Testing history', () => {
             DynamoDbDataService,
             ElasticSearchService,
             stubs.history,
+            stubs.passThroughAuthz,
             '4.0.1',
             'https://API_URL.com',
         );
@@ -679,7 +688,7 @@ describe('Testing history', () => {
         });
 
         // OPERATE
-        const searchResponse: any = await resourceHandler.typeHistory('Patient', { name: 'Henry' });
+        const searchResponse: any = await resourceHandler.typeHistory('Patient', { name: 'Henry' }, {});
 
         // CHECK
         expect(searchResponse.resourceType).toEqual('Bundle');
@@ -715,7 +724,7 @@ describe('Testing history', () => {
         });
 
         // OPERATE
-        const searchResponse: any = await resourceHandler.typeHistory('Patient', { name: 'Henry' });
+        const searchResponse: any = await resourceHandler.typeHistory('Patient', { name: 'Henry' }, {});
 
         // CHECK
         expect(searchResponse.resourceType).toEqual('Bundle');
@@ -739,7 +748,7 @@ describe('Testing history', () => {
         stubs.history.typeHistory = jest.fn().mockRejectedValue(new Error('Boom!!'));
         try {
             // OPERATE
-            await resourceHandler.typeHistory('Patient', { name: 'Henry' });
+            await resourceHandler.typeHistory('Patient', { name: 'Henry' }, {});
         } catch (e) {
             // CHECK
             expect(e).toEqual(new Error('Boom!!'));
@@ -765,7 +774,7 @@ describe('Testing history', () => {
         });
 
         // OPERATE
-        const searchResponse: any = await resourceHandler.instanceHistory('Patient', 'id123', { name: 'Henry' });
+        const searchResponse: any = await resourceHandler.instanceHistory('Patient', 'id123', { name: 'Henry' }, {});
 
         // CHECK
         expect(searchResponse.resourceType).toEqual('Bundle');
@@ -796,7 +805,7 @@ describe('Testing history', () => {
         stubs.history.instanceHistory = jest.fn().mockRejectedValue(new Error('Boom!!'));
         try {
             // OPERATE
-            await resourceHandler.instanceHistory('Patient', 'id123', { name: 'Henry' });
+            await resourceHandler.instanceHistory('Patient', 'id123', { name: 'Henry' }, {});
         } catch (e) {
             // CHECK
             expect(e).toEqual(new Error('Boom!!'));
@@ -824,11 +833,15 @@ describe('Testing history', () => {
             });
 
             // OPERATE
-            const searchResponse: any = await resourceHandler.typeHistory('Patient', {
-                name: 'Henry',
-                [SEARCH_PAGINATION_PARAMS.PAGES_OFFSET]: 0,
-                [SEARCH_PAGINATION_PARAMS.COUNT]: 1,
-            });
+            const searchResponse: any = await resourceHandler.typeHistory(
+                'Patient',
+                {
+                    name: 'Henry',
+                    [SEARCH_PAGINATION_PARAMS.PAGES_OFFSET]: 0,
+                    [SEARCH_PAGINATION_PARAMS.COUNT]: 1,
+                },
+                {},
+            );
 
             // CHECK
             expect(searchResponse.resourceType).toEqual('Bundle');
@@ -876,11 +889,15 @@ describe('Testing history', () => {
             });
 
             // OPERATE
-            const searchResponse: any = await resourceHandler.typeHistory('Patient', {
-                name: 'Henry',
-                [SEARCH_PAGINATION_PARAMS.PAGES_OFFSET]: 1,
-                [SEARCH_PAGINATION_PARAMS.COUNT]: 1,
-            });
+            const searchResponse: any = await resourceHandler.typeHistory(
+                'Patient',
+                {
+                    name: 'Henry',
+                    [SEARCH_PAGINATION_PARAMS.PAGES_OFFSET]: 1,
+                    [SEARCH_PAGINATION_PARAMS.COUNT]: 1,
+                },
+                {},
+            );
 
             // CHECK
             expect(searchResponse.resourceType).toEqual('Bundle');
@@ -929,11 +946,15 @@ describe('Testing history', () => {
             });
 
             // OPERATE
-            const searchResponse: any = await resourceHandler.typeHistory('Patient', {
-                name: 'Henry',
-                [SEARCH_PAGINATION_PARAMS.PAGES_OFFSET]: 1,
-                [SEARCH_PAGINATION_PARAMS.COUNT]: 1,
-            });
+            const searchResponse: any = await resourceHandler.typeHistory(
+                'Patient',
+                {
+                    name: 'Henry',
+                    [SEARCH_PAGINATION_PARAMS.PAGES_OFFSET]: 1,
+                    [SEARCH_PAGINATION_PARAMS.COUNT]: 1,
+                },
+                {},
+            );
 
             // CHECK
             expect(searchResponse.resourceType).toEqual('Bundle');

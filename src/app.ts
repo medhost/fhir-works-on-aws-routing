@@ -99,6 +99,7 @@ export function generateServerlessRouter(
                     persistence,
                     typeSearch,
                     typeHistory,
+                    fhirConfig.auth.authorization,
                     fhirVersion,
                     serverUrl,
                 );
@@ -124,6 +125,7 @@ export function generateServerlessRouter(
             genericResource.persistence,
             genericResource.typeSearch,
             genericResource.typeHistory,
+            fhirConfig.auth.authorization,
             fhirVersion,
             serverUrl,
         );

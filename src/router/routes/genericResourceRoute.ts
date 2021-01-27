@@ -88,7 +88,11 @@ export default class GenericResourceRoute {
                     // Get the ResourceType looks like '/Patient'
                     const resourceType = req.proxy.split('/')[0];
                     const searchParamQuery = req.query;
-                    const response = await this.handler.typeHistory(resourceType, searchParamQuery);
+                    const response = await this.handler.typeHistory(
+                        resourceType,
+                        searchParamQuery,
+                        res.locals.userIdentity,
+                    );
                     const updatedReadResponse = await this.authService.authorizeAndFilterReadResponse({
                         operation: 'history-type',
                         userIdentity: res.locals.userIdentity,
@@ -108,7 +112,12 @@ export default class GenericResourceRoute {
                     const resourceType = req.proxy.split('/')[0];
                     const searchParamQuery = req.query;
                     const { id } = req.params;
-                    const response = await this.handler.instanceHistory(resourceType, id, searchParamQuery);
+                    const response = await this.handler.instanceHistory(
+                        resourceType,
+                        id,
+                        searchParamQuery,
+                        res.locals.userIdentity,
+                    );
                     const updatedReadResponse = await this.authService.authorizeAndFilterReadResponse({
                         operation: 'history-instance',
                         userIdentity: res.locals.userIdentity,
@@ -137,6 +146,7 @@ export default class GenericResourceRoute {
                         resourceType,
                         searchParamQuery,
                         allowedResourceTypes,
+                        res.locals.userIdentity,
                         tenantId,
                     );
                     const updatedReadResponse = await this.authService.authorizeAndFilterReadResponse({
