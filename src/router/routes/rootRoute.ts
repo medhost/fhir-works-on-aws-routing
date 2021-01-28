@@ -68,6 +68,7 @@ export default class RootRoute {
                             const response = await this.bundleHandler.processTransaction(
                                 req.body,
                                 res.locals.userIdentity,
+                                '',
                             );
                             res.send(response);
                         } else if (req.body.type.toLowerCase() === 'batch') {
