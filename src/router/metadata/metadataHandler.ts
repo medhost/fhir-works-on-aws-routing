@@ -21,7 +21,7 @@ export default class MetadataHandler implements Capabilities {
         this.hasCORSEnabled = hasCORSEnabled;
     }
 
-    private generateResources(fhirVersion: FhirVersion) {
+    private async generateResources(fhirVersion: FhirVersion) {
         const specialResourceTypes = this.configHandler.getSpecialResourceTypes(fhirVersion);
         let generatedResources = [];
         if (this.configHandler.config.profile.genericResource) {
@@ -29,30 +29,33 @@ export default class MetadataHandler implements Capabilities {
             generatedResources = makeGenericResources(
                 generatedResourcesTypes,
                 this.configHandler.getGenericOperations(fhirVersion),
+                await this.configHandler.config.profile.genericResource.typeSearch.getCapabilities(),
             );
         }
 
         // Add the special resources
-        specialResourceTypes.forEach((resourceType: string) => {
-            generatedResources.push(
-                makeResource(resourceType, this.configHandler.getSpecialResourceOperations(resourceType, fhirVersion)),
-            );
-        });
+        generatedResources.push(
+            ...(await Promise.all(
+                specialResourceTypes.map(resourceType =>
+                    makeResource(resourceType, this.configHandler.config.profile.resources![resourceType]),
+                ),
+            )),
+        );
 
         return generatedResources;
     }
 
     async capabilities(request: CapabilitiesRequest): Promise<GenericResponse> {
-        const { auth, orgName, server, profile } = this.configHandler.config;
+        const { auth, productInfo, server, profile } = this.configHandler.config;
 
         if (!this.configHandler.isVersionSupported(request.fhirVersion)) {
             throw new createError.NotFound(`FHIR version ${request.fhirVersion} is not supported`);
         }
 
-        const generatedResources = this.generateResources(request.fhirVersion);
+        const generatedResources = await this.generateResources(request.fhirVersion);
         const security = makeSecurity(auth, this.hasCORSEnabled);
         const rest = makeRest(generatedResources, security, profile.systemOperations, !!profile.bulkDataAccess);
-        const capStatement = makeStatement(rest, orgName, server.url, request.fhirVersion);
+        const capStatement = makeStatement(rest, productInfo, server.url, request.fhirVersion);
 
         return {
             message: 'success',
