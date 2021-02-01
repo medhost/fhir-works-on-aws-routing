@@ -396,6 +396,7 @@ describe('Testing search', () => {
                 name: 'Henry',
             },
             resourceType: 'Patient',
+            tenantId: '',
         });
         expect(searchResponse.resourceType).toEqual('Bundle');
         expect(searchResponse.meta).toBeDefined();
