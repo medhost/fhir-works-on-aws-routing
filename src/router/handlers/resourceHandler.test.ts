@@ -436,7 +436,13 @@ describe('Testing search', () => {
         });
 
         // OPERATE
-        const searchResponse: any = await resourceHandler.typeSearch('Patient', { name: 'Henry' }, [], {}, defaultTenantId);
+        const searchResponse: any = await resourceHandler.typeSearch(
+            'Patient',
+            { name: 'Henry' },
+            [],
+            {},
+            defaultTenantId,
+        );
 
         // CHECK
         expect(searchResponse.resourceType).toEqual('Bundle');

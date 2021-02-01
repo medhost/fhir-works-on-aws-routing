@@ -663,7 +663,7 @@ describe('ERROR Cases: Bundle not authorized', () => {
         bundleRequestJSON.entry = bundleRequestJSON.entry.concat(sampleCrudEntries);
 
         await expect(
-            bundleHandlerWithStubbedAuthZ.processTransaction(bundleRequestJSON, practitionerDecoded),
+            bundleHandlerWithStubbedAuthZ.processTransaction(bundleRequestJSON, practitionerDecoded, ''),
         ).rejects.toThrowError(new UnauthorizedError('An entry within the Bundle is not authorized'));
     });
 
@@ -752,7 +752,7 @@ describe('ERROR Cases: Bundle not authorized', () => {
             ],
         };
         await expect(
-            bundleHandlerWithStubbedAuthZ.processTransaction(bundleRequestJSON, practitionerDecoded),
+            bundleHandlerWithStubbedAuthZ.processTransaction(bundleRequestJSON, practitionerDecoded, ''),
         ).resolves.toMatchObject(expectedResult);
     });
 });
