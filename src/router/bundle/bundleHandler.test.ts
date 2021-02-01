@@ -425,7 +425,7 @@ describe('ERROR Cases: Validation of Bundle request', () => {
             const bundleRequestJSON = clone(sampleBundleRequestJSON);
             bundleRequestJSON.entry.push(invalidReadRequest);
 
-            await bundleHandlerR4.processTransaction(bundleRequestJSON, practitionerDecoded);
+            await bundleHandlerR4.processTransaction(bundleRequestJSON, practitionerDecoded, '');
         } catch (e) {
             expect(e).toEqual(new InvalidResourceError('data.entry[0].request should NOT have additional properties'));
         }
@@ -448,7 +448,7 @@ describe('ERROR Cases: Validation of Bundle request', () => {
 
             delete bundleRequestJSON.resourceType;
 
-            await bundleHandlerSTU3.processTransaction(bundleRequestJSON, practitionerDecoded);
+            await bundleHandlerSTU3.processTransaction(bundleRequestJSON, practitionerDecoded, '');
         } catch (e) {
             expect(e).toEqual(new InvalidResourceError("data should have required property 'resourceType'"));
         }
@@ -467,7 +467,7 @@ describe('ERROR Cases: Validation of Bundle request', () => {
             const bundleRequestJSON = clone(sampleBundleRequestJSON);
             bundleRequestJSON.entry.push(searchRequest);
 
-            await bundleHandlerR4.processTransaction(bundleRequestJSON, practitionerDecoded);
+            await bundleHandlerR4.processTransaction(bundleRequestJSON, practitionerDecoded, '');
         } catch (e) {
             expect(e.name).toEqual('BadRequestError');
             expect(e.statusCode).toEqual(400);
@@ -488,7 +488,7 @@ describe('ERROR Cases: Validation of Bundle request', () => {
             const bundleRequestJSON = clone(sampleBundleRequestJSON);
             bundleRequestJSON.entry.push(vreadRequest);
 
-            await bundleHandlerR4.processTransaction(bundleRequestJSON, practitionerDecoded);
+            await bundleHandlerR4.processTransaction(bundleRequestJSON, practitionerDecoded, '');
         } catch (e) {
             expect(e.name).toEqual('BadRequestError');
             expect(e.statusCode).toEqual(400);
@@ -509,7 +509,7 @@ describe('ERROR Cases: Validation of Bundle request', () => {
             bundleRequestJSON.entry.push(readRequest);
         }
         try {
-            await bundleHandlerR4.processTransaction(bundleRequestJSON, practitionerDecoded);
+            await bundleHandlerR4.processTransaction(bundleRequestJSON, practitionerDecoded, '');
         } catch (e) {
             expect(e.name).toEqual('BadRequestError');
             expect(e.statusCode).toEqual(400);
@@ -526,7 +526,7 @@ describe('SUCCESS Cases: Testing Bundle with CRUD entries', () => {
         const bundleRequestJSON = clone(sampleBundleRequestJSON);
         bundleRequestJSON.entry = bundleRequestJSON.entry.concat(sampleCrudEntries);
 
-        const actualResult = await bundleHandlerR4.processTransaction(bundleRequestJSON, practitionerDecoded);
+        const actualResult = await bundleHandlerR4.processTransaction(bundleRequestJSON, practitionerDecoded, '');
 
         const expectedResult = {
             resourceType: 'Bundle',
@@ -604,7 +604,7 @@ describe('SUCCESS Cases: Testing Bundle with CRUD entries', () => {
     test('Bundle request is empty', async () => {
         const bundleRequestJSON = clone(sampleBundleRequestJSON);
 
-        const actualResult = await bundleHandlerR4.processTransaction(bundleRequestJSON, practitionerDecoded);
+        const actualResult = await bundleHandlerR4.processTransaction(bundleRequestJSON, practitionerDecoded, '');
 
         expect(actualResult).toMatchObject({
             resourceType: 'Bundle',
@@ -663,7 +663,7 @@ describe('ERROR Cases: Bundle not authorized', () => {
         bundleRequestJSON.entry = bundleRequestJSON.entry.concat(sampleCrudEntries);
 
         await expect(
-            bundleHandlerWithStubbedAuthZ.processTransaction(bundleRequestJSON, practitionerDecoded),
+            bundleHandlerWithStubbedAuthZ.processTransaction(bundleRequestJSON, practitionerDecoded, ''),
         ).rejects.toThrowError(new UnauthorizedError('An entry within the Bundle is not authorized'));
     });
 
@@ -752,7 +752,7 @@ describe('ERROR Cases: Bundle not authorized', () => {
             ],
         };
         await expect(
-            bundleHandlerWithStubbedAuthZ.processTransaction(bundleRequestJSON, practitionerDecoded),
+            bundleHandlerWithStubbedAuthZ.processTransaction(bundleRequestJSON, practitionerDecoded, ''),
         ).resolves.toMatchObject(expectedResult);
     });
 });
@@ -812,6 +812,7 @@ describe('SERVER-CAPABILITIES Cases: Validating Bundle request is allowed given 
                 await bundleHandlerReadGenericResource.processTransaction(
                     bundleRequestJsonCreatePatient,
                     practitionerDecoded,
+                    '',
                 );
             } catch (e) {
                 // CHECK
@@ -851,6 +852,7 @@ describe('SERVER-CAPABILITIES Cases: Validating Bundle request is allowed given 
                 await bundleHandlerExcludePatient.processTransaction(
                     bundleRequestJsonCreatePatient,
                     practitionerDecoded,
+                    '',
                 );
             } catch (e) {
                 // CHECK
@@ -901,6 +903,7 @@ describe('SERVER-CAPABILITIES Cases: Validating Bundle request is allowed given 
             const result = await bundleHandlerSpecialResourcePatient.processTransaction(
                 bundleRequestJsonCreatePatient,
                 practitionerDecoded,
+                '',
             );
 
             // CHECK
@@ -930,6 +933,7 @@ describe('SERVER-CAPABILITIES Cases: Validating Bundle request is allowed given 
             const result = await bundleHandlerNoExclusion.processTransaction(
                 bundleRequestJsonCreatePatient,
                 practitionerDecoded,
+                '',
             );
 
             // CHECK

@@ -64,7 +64,7 @@ export default class ResourceHandler implements CrudHandlerInterface {
         queryParams: any,
         allowedResourceTypes: string[],
         userIdentity: KeyValueMap,
-        tenantId
+        tenantId: string,
     ) {
         const searchFilters = await this.authService.getSearchFilterBasedOnIdentity({
             userIdentity,

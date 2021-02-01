@@ -65,9 +65,11 @@ export default class RootRoute {
                 RouteHelper.wrapAsync(async (req: express.Request, res: express.Response) => {
                     if (req.body.resourceType === 'Bundle') {
                         if (req.body.type.toLowerCase() === 'transaction') {
+                            const { tenantId } = req;
                             const response = await this.bundleHandler.processTransaction(
                                 req.body,
                                 res.locals.userIdentity,
+                                tenantId,
                             );
                             res.send(response);
                         } else if (req.body.type.toLowerCase() === 'batch') {

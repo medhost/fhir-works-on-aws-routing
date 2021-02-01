@@ -146,8 +146,8 @@ export default class GenericResourceRoute {
                         resourceType,
                         searchParamQuery,
                         allowedResourceTypes,
-                        tenantId,
                         res.locals.userIdentity,
+                        tenantId,
                     );
                     const updatedReadResponse = await this.authService.authorizeAndFilterReadResponse({
                         operation: 'search-type',
