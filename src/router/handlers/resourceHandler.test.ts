@@ -401,6 +401,7 @@ describe('Testing search', () => {
             },
             resourceType: 'Patient',
             searchFilters: [],
+            tenantId: '',
         });
         expect(searchResponse.resourceType).toEqual('Bundle');
         expect(searchResponse.meta).toBeDefined();
@@ -435,7 +436,13 @@ describe('Testing search', () => {
         });
 
         // OPERATE
-        const searchResponse: any = await resourceHandler.typeSearch('Patient', { name: 'Henry' }, [], {}, defaultTenantId);
+        const searchResponse: any = await resourceHandler.typeSearch(
+            'Patient',
+            { name: 'Henry' },
+            [],
+            {},
+            defaultTenantId,
+        );
 
         // CHECK
         expect(searchResponse.resourceType).toEqual('Bundle');
