@@ -1,8 +1,26 @@
-import { FhirConfig, stubs } from 'fhir-works-on-aws-interface';
+import {
+    Authorization,
+    BulkDataAccess,
+    Bundle,
+    FhirConfig,
+    History,
+    Persistence,
+    Search,
+    stubs as fwoaStubs,
+} from 'fhir-works-on-aws-interface';
 
-const config: FhirConfig = {
+const config = (stubs: {
+    bundle: Bundle;
+    search: Search;
+    history: History;
+    passThroughAuthz: Authorization;
+    persistence: Persistence;
+    bulkDataAccess: BulkDataAccess;
+}): FhirConfig => ({
     configVersion: 1,
-    orgName: 'Organization Name',
+    productInfo: {
+        orgName: 'Organization Name',
+    },
     auth: {
         strategy: {
             service: 'Basic',
@@ -52,6 +70,10 @@ const config: FhirConfig = {
             },
         },
     },
+});
+
+const configFn = (overrideStubs?: any) => {
+    return config({ ...fwoaStubs, ...overrideStubs });
 };
 
-export default config;
+export default configFn;

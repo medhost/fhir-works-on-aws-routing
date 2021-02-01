@@ -26,6 +26,8 @@ export default class RootRoute {
 
     private rootHandler: RootHandler;
 
+    private authService: Authorization;
+
     private operations: SystemOperation[];
 
     constructor(
@@ -51,7 +53,8 @@ export default class RootRoute {
             genericResource,
             resources,
         );
-        this.rootHandler = new RootHandler(search, history, serverUrl);
+        this.authService = authService;
+        this.rootHandler = new RootHandler(search, history, authService, serverUrl);
         this.init();
     }
 
@@ -86,8 +89,13 @@ export default class RootRoute {
                 '/',
                 RouteHelper.wrapAsync(async (req: express.Request, res: express.Response) => {
                     const searchParamQuery = req.query;
-                    const response = await this.rootHandler.globalSearch(searchParamQuery);
-                    res.send(response);
+                    const response = await this.rootHandler.globalSearch(searchParamQuery, res.locals.userIdentity);
+                    const updatedReadResponse = await this.authService.authorizeAndFilterReadResponse({
+                        operation: 'search-system',
+                        userIdentity: res.locals.userIdentity,
+                        readResponse: response,
+                    });
+                    res.send(updatedReadResponse);
                 }),
             );
         }
@@ -96,8 +104,13 @@ export default class RootRoute {
                 '/_history',
                 RouteHelper.wrapAsync(async (req: express.Request, res: express.Response) => {
                     const searchParamQuery = req.query;
-                    const response = await this.rootHandler.globalHistory(searchParamQuery);
-                    res.send(response);
+                    const response = await this.rootHandler.globalHistory(searchParamQuery, res.locals.userIdentity);
+                    const updatedReadResponse = await this.authService.authorizeAndFilterReadResponse({
+                        operation: 'history-system',
+                        userIdentity: res.locals.userIdentity,
+                        readResponse: response,
+                    });
+                    res.send(updatedReadResponse);
                 }),
             );
         }

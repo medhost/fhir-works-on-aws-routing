@@ -54,6 +54,7 @@ export function generateServerlessRouter(
     // Metadata
     const metadataRoute: MetadataRoute = new MetadataRoute(fhirVersion, configHandler, hasCORSEnabled);
     app.use('/metadata', metadataRoute.router);
+    app.use('/tenant/:tenantId/metadata', metadataRoute.router);
 
     if (fhirConfig.auth.strategy.service === 'SMART-on-FHIR') {
         // well-known URI http://www.hl7.org/fhir/smart-app-launch/conformance/index.html#using-well-known
@@ -99,6 +100,7 @@ export function generateServerlessRouter(
                     persistence,
                     typeSearch,
                     typeHistory,
+                    fhirConfig.auth.authorization,
                     fhirVersion,
                     serverUrl,
                 );
@@ -124,6 +126,7 @@ export function generateServerlessRouter(
             genericResource.persistence,
             genericResource.typeSearch,
             genericResource.typeHistory,
+            fhirConfig.auth.authorization,
             fhirVersion,
             serverUrl,
         );
