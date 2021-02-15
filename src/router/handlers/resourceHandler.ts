@@ -69,6 +69,7 @@ export default class ResourceHandler implements CrudHandlerInterface {
         const searchFilters = await this.authService.getSearchFilterBasedOnIdentity({
             userIdentity,
             operation: 'search-type',
+            resourceType,
         });
 
         const searchResponse = await this.searchService.typeSearch({
@@ -92,6 +93,7 @@ export default class ResourceHandler implements CrudHandlerInterface {
         const searchFilters = await this.authService.getSearchFilterBasedOnIdentity({
             userIdentity,
             operation: 'history-type',
+            resourceType,
         });
 
         const historyResponse = await this.historyService.typeHistory({
@@ -113,6 +115,8 @@ export default class ResourceHandler implements CrudHandlerInterface {
         const searchFilters = await this.authService.getSearchFilterBasedOnIdentity({
             userIdentity,
             operation: 'history-instance',
+            resourceType,
+            id,
         });
 
         const historyResponse = await this.historyService.instanceHistory({
