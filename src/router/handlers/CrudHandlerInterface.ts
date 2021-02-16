@@ -19,6 +19,12 @@ export default interface CrudHandlerInterface {
         userIdentity: KeyValueMap,
         tenantId: string,
     ): any;
-    typeHistory(resourceType: string, searchParams: any, userIdentity: KeyValueMap): any;
-    instanceHistory(resourceType: string, id: string, searchParams: any, userIdentity: KeyValueMap): any;
+    typeHistory(resourceType: string, searchParams: any, userIdentity: KeyValueMap, tenantId: string): any;
+    instanceHistory(
+        resourceType: string,
+        id: string,
+        searchParams: any,
+        userIdentity: KeyValueMap,
+        tenantId: string,
+    ): any;
 }

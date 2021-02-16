@@ -89,7 +89,12 @@ export default class RootRoute {
                 '/',
                 RouteHelper.wrapAsync(async (req: express.Request, res: express.Response) => {
                     const searchParamQuery = req.query;
-                    const response = await this.rootHandler.globalSearch(searchParamQuery, res.locals.userIdentity);
+                    const { tenantId } = req;
+                    const response = await this.rootHandler.globalSearch(
+                        searchParamQuery,
+                        tenantId,
+                        res.locals.userIdentity,
+                    );
                     const updatedReadResponse = await this.authService.authorizeAndFilterReadResponse({
                         operation: 'search-system',
                         userIdentity: res.locals.userIdentity,
@@ -104,7 +109,12 @@ export default class RootRoute {
                 '/_history',
                 RouteHelper.wrapAsync(async (req: express.Request, res: express.Response) => {
                     const searchParamQuery = req.query;
-                    const response = await this.rootHandler.globalHistory(searchParamQuery, res.locals.userIdentity);
+                    const { tenantId } = req;
+                    const response = await this.rootHandler.globalHistory(
+                        searchParamQuery,
+                        tenantId,
+                        res.locals.userIdentity,
+                    );
                     const updatedReadResponse = await this.authService.authorizeAndFilterReadResponse({
                         operation: 'history-system',
                         userIdentity: res.locals.userIdentity,

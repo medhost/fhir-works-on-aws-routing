@@ -223,14 +223,16 @@ export default class BundleParser {
                                     resourceType: reference.resourceType,
                                     id: reference.id,
                                     vid: reference.vid,
-                                    tenantId: '', // TODO Fix tenantId for Bundle
+                                    tenantId: '',
+                                    // TODO Fix tenantId for Bundle
                                 });
                             } else {
                                 // eslint-disable-next-line no-await-in-loop
                                 await dataService.readResource({
                                     resourceType: reference.resourceType,
                                     id: reference.id,
-                                    tenantId: '', // TODO Fix tenantId for Bundle
+                                    tenantId: '',
+                                    // TODO Fix tenantId for Bundle
                                 });
                             }
                         } catch (e) {
