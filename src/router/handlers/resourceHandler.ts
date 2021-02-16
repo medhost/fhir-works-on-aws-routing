@@ -82,6 +82,7 @@ export default class ResourceHandler implements CrudHandlerInterface {
         });
         return BundleGenerator.generateBundle(
             this.serverUrl,
+            tenantId,
             queryParams,
             searchResponse.result,
             'searchset',
@@ -90,7 +91,7 @@ export default class ResourceHandler implements CrudHandlerInterface {
         );
     }
 
-    async typeHistory(resourceType: string, queryParams: any, userIdentity: KeyValueMap) {
+    async typeHistory(resourceType: string, queryParams: any, userIdentity: KeyValueMap, tenantId: string) {
         const searchFilters = await this.authService.getSearchFilterBasedOnIdentity({
             userIdentity,
             operation: 'history-type',
@@ -102,9 +103,11 @@ export default class ResourceHandler implements CrudHandlerInterface {
             queryParams,
             baseUrl: this.serverUrl,
             searchFilters,
+            tenantId,
         });
         return BundleGenerator.generateBundle(
             this.serverUrl,
+            tenantId,
             queryParams,
             historyResponse.result,
             'history',
@@ -112,7 +115,13 @@ export default class ResourceHandler implements CrudHandlerInterface {
         );
     }
 
-    async instanceHistory(resourceType: string, id: string, queryParams: any, userIdentity: KeyValueMap) {
+    async instanceHistory(
+        resourceType: string,
+        id: string,
+        queryParams: any,
+        userIdentity: KeyValueMap,
+        tenantId: string,
+    ) {
         const searchFilters = await this.authService.getSearchFilterBasedOnIdentity({
             userIdentity,
             operation: 'history-instance',
@@ -125,10 +134,12 @@ export default class ResourceHandler implements CrudHandlerInterface {
             resourceType,
             queryParams,
             baseUrl: this.serverUrl,
+            tenantId,
             searchFilters,
         });
         return BundleGenerator.generateBundle(
             this.serverUrl,
+            tenantId,
             queryParams,
             historyResponse.result,
             'history',

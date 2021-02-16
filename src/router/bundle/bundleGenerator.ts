@@ -5,7 +5,7 @@
 
 import uuidv4 from 'uuid/v4';
 import URL from 'url';
-import { SearchResult, BatchReadWriteResponse } from 'fhir-works-on-aws-interface';
+import { BatchReadWriteResponse, SearchResult } from 'fhir-works-on-aws-interface';
 import { isEmpty } from 'lodash';
 
 type LinkType = 'self' | 'previous' | 'next' | 'first' | 'last';
@@ -14,6 +14,7 @@ export default class BundleGenerator {
     // https://www.hl7.org/fhir/search.html
     static generateBundle(
         baseUrl: string,
+        tenantId: string,
         queryParams: any,
         searchResult: SearchResult,
         bundleType: 'searchset' | 'history',
@@ -30,7 +31,17 @@ export default class BundleGenerator {
             },
             type: bundleType,
             total: searchResult.numberOfResults, // Total number of search results, not total of results on page
-            link: [this.createLinkWithQuery('self', baseUrl, bundleType === 'history', resourceType, id, queryParams)],
+            link: [
+                this.createLinkWithQuery(
+                    'self',
+                    baseUrl,
+                    tenantId,
+                    bundleType === 'history',
+                    resourceType,
+                    id,
+                    queryParams,
+                ),
+            ],
             entry: searchResult.entries,
         };
 
@@ -53,12 +64,18 @@ export default class BundleGenerator {
     static createLinkWithQuery(
         linkType: LinkType,
         host: string,
+        tenantId: string,
         isHistory: boolean,
         resourceType?: string,
         id?: string,
         query?: any,
     ) {
         let pathname = '';
+
+        if (tenantId) {
+            pathname += `/tenant/${tenantId}`;
+        }
+
         if (resourceType) {
             pathname += `/${resourceType}`;
         }
