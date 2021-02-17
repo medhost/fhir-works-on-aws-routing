@@ -102,8 +102,13 @@ export default class BundleGenerator {
         };
     }
 
-    static generateTransactionBundle(baseUrl: string, bundleEntryResponses: BatchReadWriteResponse[]) {
+    static generateTransactionBundle(
+        baseUrl: string,
+        tenantId: string,
+        bundleEntryResponses: BatchReadWriteResponse[],
+    ) {
         const id = uuidv4();
+        const tenantUrlFragment = tenantId ? `/tenant/${tenantId}` : '';
         const response = {
             resourceType: 'Bundle',
             id,
@@ -111,7 +116,7 @@ export default class BundleGenerator {
             link: [
                 {
                     relation: 'self',
-                    url: baseUrl,
+                    url: `${baseUrl}${tenantUrlFragment}`,
                 },
             ],
             entry: [],
