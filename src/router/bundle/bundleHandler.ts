@@ -183,6 +183,10 @@ export default class BundleHandler implements BundleHandlerInterface {
             bundleServiceResponse.batchReadWriteResponses[index] = entryResponse;
         });
 
-        return BundleGenerator.generateTransactionBundle(this.serverUrl, bundleServiceResponse.batchReadWriteResponses);
+        return BundleGenerator.generateTransactionBundle(
+            this.serverUrl,
+            tenantId,
+            bundleServiceResponse.batchReadWriteResponses,
+        );
     }
 }
