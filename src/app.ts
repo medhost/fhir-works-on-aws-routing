@@ -68,7 +68,7 @@ export function generateServerlessRouter(
     // AuthZ
     app.use(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
         try {
-            const requestInformation = getRequestInformation(req.method, req.proxy);
+            const requestInformation = getRequestInformation(req.method, req.proxy ? req.proxy : req.path);
             // Clean auth header (remove 'Bearer ')
             req.headers.authorization = cleanAuthHeader(req.headers.authorization);
             res.locals.userIdentity = await fhirConfig.auth.authorization.verifyAccessToken({
@@ -159,6 +159,7 @@ export function generateServerlessRouter(
             fhirConfig.profile.resources,
         );
         app.use('/', rootRoute.router);
+        app.use('/tenant/:tenantId/', rootRoute.router);
     }
 
     app.use(applicationErrorMapper);
