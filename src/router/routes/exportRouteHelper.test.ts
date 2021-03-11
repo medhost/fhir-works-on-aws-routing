@@ -33,6 +33,23 @@ describe('buildInitiateExportRequest', () => {
         });
     });
 
+    test('System Export request with tenantId', () => {
+        const tenantId: string = 'custom-tenant';
+        const req = mockRequest({
+            tenantId,
+        });
+
+        const actualInitiateExportRequest = ExportRouteHelper.buildInitiateExportRequest(req, mockedResponse, 'system');
+        expect(actualInitiateExportRequest).toMatchObject({
+            requesterUserId: 'abcd-1234',
+            exportType: 'system',
+            outputFormat: undefined,
+            since: undefined,
+            type: undefined,
+            tenantId,
+        });
+    });
+
     test('Group Export request with query parameters', () => {
         const req = mockRequest({
             query: {
@@ -140,6 +157,20 @@ describe('getExportUrl', () => {
             expect(result).toEqual(
                 'http://api_url.com/Group/12/$export?_outputFormat=ndjson&_since=2020-09-02T00%3A00%3A00-05%3A00&_type=Patient',
             );
+        });
+    });
+    describe('Base url', () => {
+        const baseUrl = 'http://API_URL.com';
+        const queryParams = {};
+        const groupId = undefined;
+        const tenantId = 'custom-tenant';
+        test('No tenant', () => {
+            const result = ExportRouteHelper.getExportUrl(baseUrl, 'system', queryParams, groupId);
+            expect(result).toEqual('http://api_url.com/$export');
+        });
+        test('With tenant', () => {
+            const result = ExportRouteHelper.getExportUrl(baseUrl, 'system', queryParams, groupId, tenantId);
+            expect(result).toEqual('http://api_url.com/tenant/custom-tenant/$export');
         });
     });
     describe('Subset params: only type', () => {
