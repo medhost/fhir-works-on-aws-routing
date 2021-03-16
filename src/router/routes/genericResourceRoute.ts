@@ -225,7 +225,7 @@ export default class GenericResourceRoute {
                 RouteHelper.wrapAsync(async (req: express.Request, res: express.Response) => {
                     const resourceType = req.proxy.split('/')[0];
                     const { id } = req.params;
-                    const { body } = req;
+                    const { body, tenantId } = req;
 
                     if (body.id === null || body.id !== id) {
                         throw new createError.BadRequest(
