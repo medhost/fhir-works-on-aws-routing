@@ -43,7 +43,7 @@ export default class GenericResourceRoute {
                         userIdentity: res.locals.userIdentity,
                         readResponse: response,
                     });
-                    if (updatedReadResponse.meta) {
+                    if (updatedReadResponse && updatedReadResponse.meta) {
                         res.set({
                             ETag: `W/"${updatedReadResponse.meta.versionId}"`,
                             'Last-Modified': updatedReadResponse.meta.lastUpdated,
@@ -69,7 +69,7 @@ export default class GenericResourceRoute {
                         userIdentity: res.locals.userIdentity,
                         readResponse: response,
                     });
-                    if (updatedReadResponse.meta) {
+                    if (updatedReadResponse && updatedReadResponse.meta) {
                         res.set({
                             ETag: `W/"${updatedReadResponse.meta.versionId}"`,
                             'Last-Modified': updatedReadResponse.meta.lastUpdated,
@@ -180,7 +180,7 @@ export default class GenericResourceRoute {
                     });
 
                     const response = await this.handler.create(resourceType, body, tenantId);
-                    if (response.meta) {
+                    if (response && response.meta) {
                         res.set({ ETag: `W/"${response.meta.versionId}"`, 'Last-Modified': response.meta.lastUpdated });
                     }
                     res.status(201).send(response);
@@ -210,7 +210,7 @@ export default class GenericResourceRoute {
                     });
 
                     const response = await this.handler.update(resourceType, id, body, tenantId);
-                    if (response.meta) {
+                    if (response && response.meta) {
                         res.set({ ETag: `W/"${response.meta.versionId}"`, 'Last-Modified': response.meta.lastUpdated });
                     }
                     res.send(response);
@@ -238,9 +238,8 @@ export default class GenericResourceRoute {
                         userIdentity: res.locals.userIdentity,
                     });
 
-                    const { tenantId } = req;
                     const response = await this.handler.patch(resourceType, id, body, tenantId);
-                    if (response.meta) {
+                    if (response && response.meta) {
                         res.set({ ETag: `W/"${response.meta.versionId}"`, 'Last-Modified': response.meta.lastUpdated });
                     }
                     res.send(response);
