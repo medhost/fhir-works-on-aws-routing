@@ -421,7 +421,9 @@ describe('ERROR Cases: Validation of Bundle request', () => {
         const bundleRequestJSON = clone(sampleBundleRequestJSON);
         bundleRequestJSON.entry.push(invalidReadRequest);
 
-        await expect(bundleHandlerR4.processTransaction(bundleRequestJSON, practitionerDecoded, '')).rejects.toThrowError(
+        await expect(
+            bundleHandlerR4.processTransaction(bundleRequestJSON, practitionerDecoded, ''),
+        ).rejects.toThrowError(
             new InvalidResourceError(
                 'Failed to parse request body as JSON resource. Error was: data.entry[0].request should NOT have additional properties',
             ),
@@ -432,7 +434,9 @@ describe('ERROR Cases: Validation of Bundle request', () => {
         const bundleRequestJSON = clone(sampleBundleRequestJSON);
         bundleRequestJSON.total = 'abc';
 
-        await expect(bundleHandlerSTU3.processTransaction(bundleRequestJSON, practitionerDecoded)).rejects.toThrowError(
+        await expect(
+            bundleHandlerSTU3.processTransaction(bundleRequestJSON, practitionerDecoded, ''),
+        ).rejects.toThrowError(
             new InvalidResourceError(
                 'Failed to parse request body as JSON resource. Error was: data.total should be number, data.total should match pattern "[0]|([1-9][0-9]*)"',
             ),
@@ -443,9 +447,9 @@ describe('ERROR Cases: Validation of Bundle request', () => {
         const bundleRequestJSON = clone(sampleBundleRequestJSON);
         delete bundleRequestJSON.resourceType;
 
-        await expect(bundleHandlerSTU3.processTransaction(bundleRequestJSON, practitionerDecoded, '')).rejects.toThrowError(
-            new InvalidResourceError("resource should have required property 'resourceType'"),
-        );
+        await expect(
+            bundleHandlerSTU3.processTransaction(bundleRequestJSON, practitionerDecoded, ''),
+        ).rejects.toThrowError(new InvalidResourceError("resource should have required property 'resourceType'"));
     });
 
     test('Bundle request has unsupported operation: SEARCH', async () => {
@@ -460,9 +464,9 @@ describe('ERROR Cases: Validation of Bundle request', () => {
         const bundleRequestJSON = clone(sampleBundleRequestJSON);
         bundleRequestJSON.entry.push(searchRequest);
 
-        await expect(bundleHandlerR4.processTransaction(bundleRequestJSON, practitionerDecoded, '')).rejects.toThrowError(
-            new createError.BadRequest('We currently do not support SEARCH entries in the Bundle'),
-        );
+        await expect(
+            bundleHandlerR4.processTransaction(bundleRequestJSON, practitionerDecoded, ''),
+        ).rejects.toThrowError(new createError.BadRequest('We currently do not support SEARCH entries in the Bundle'));
     });
 
     test('Bundle request has unsupported operation: VREAD', async () => {
@@ -477,9 +481,9 @@ describe('ERROR Cases: Validation of Bundle request', () => {
         const bundleRequestJSON = clone(sampleBundleRequestJSON);
         bundleRequestJSON.entry.push(vreadRequest);
 
-        await expect(bundleHandlerR4.processTransaction(bundleRequestJSON, practitionerDecoded, '')).rejects.toThrowError(
-            new createError.BadRequest('We currently do not support V_READ entries in the Bundle'),
-        );
+        await expect(
+            bundleHandlerR4.processTransaction(bundleRequestJSON, practitionerDecoded, ''),
+        ).rejects.toThrowError(new createError.BadRequest('We currently do not support V_READ entries in the Bundle'));
     });
 
     test('Bundle request has too many entries', async () => {
@@ -493,7 +497,9 @@ describe('ERROR Cases: Validation of Bundle request', () => {
             };
             bundleRequestJSON.entry.push(readRequest);
         }
-        await expect(bundleHandlerR4.processTransaction(bundleRequestJSON, practitionerDecoded, '')).rejects.toThrowError(
+        await expect(
+            bundleHandlerR4.processTransaction(bundleRequestJSON, practitionerDecoded, ''),
+        ).rejects.toThrowError(
             new createError.BadRequest(
                 `Maximum number of entries for a Bundle is ${MAX_BUNDLE_ENTRIES}. There are currently ${bundleRequestJSON.entry.length} entries in this Bundle`,
             ),
