@@ -32,8 +32,9 @@ export default class ExportRoute {
             exportType,
         );
         const jobId = await this.exportHandler.initiateExport(initiateExportRequest);
-
-        const exportStatusUrl = `${this.serverUrl}/$export/${jobId}`;
+        const { tenantId } = req;
+        const baseUrl = tenantId ? `${this.serverUrl}/tenant/${tenantId}` : this.serverUrl;
+        const exportStatusUrl = `${baseUrl}/$export/${jobId}`;
         res.header('Content-Location', exportStatusUrl)
             .status(202)
             .send();
@@ -72,6 +73,7 @@ export default class ExportRoute {
                     throw new createHttpError.InternalServerError(response.errorMessage);
                 } else if (response.jobStatus === 'completed') {
                     const { outputFormat, since, type, groupId } = response;
+                    const { tenantId } = req;
                     const queryParams = { outputFormat, since, type };
                     const jsonResponse = {
                         transactionTime: response.transactionTime,
@@ -80,6 +82,7 @@ export default class ExportRoute {
                             response.exportType,
                             queryParams,
                             groupId,
+                            tenantId,
                         ),
                         requiresAccessToken: false,
                         output: response.exportedFileUrls,

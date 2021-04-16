@@ -57,6 +57,7 @@ export function generateServerlessRouter(
     // Metadata
     const metadataRoute: MetadataRoute = new MetadataRoute(fhirVersion, configHandler, registry, hasCORSEnabled);
     app.use('/metadata', metadataRoute.router);
+    app.use('/tenant/:tenantId/metadata', metadataRoute.router);
 
     if (fhirConfig.auth.strategy.service === 'SMART-on-FHIR') {
         // well-known URI http://www.hl7.org/fhir/smart-app-launch/conformance/index.html#using-well-known
@@ -70,7 +71,7 @@ export function generateServerlessRouter(
     // AuthZ
     app.use(async (req: express.Request, res: express.Response, next: express.NextFunction) => {
         try {
-            const requestInformation = getRequestInformation(req.method, req.path);
+            const requestInformation = getRequestInformation(req.method, req.proxy ? req.proxy : '/');
             // Clean auth header (remove 'Bearer ')
             req.headers.authorization = cleanAuthHeader(req.headers.authorization);
             res.locals.userIdentity = await fhirConfig.auth.authorization.verifyAccessToken({
@@ -91,6 +92,7 @@ export function generateServerlessRouter(
             fhirConfig.auth.authorization,
         );
         app.use('/', exportRoute.router);
+        app.use('/tenant/:tenantId/', exportRoute.router);
     }
 
     // Special Resources
@@ -113,6 +115,7 @@ export function generateServerlessRouter(
                     fhirConfig.auth.authorization,
                 );
                 app.use(`/${resourceEntry[0]}`, route.router);
+                app.use(`/tenant/:tenantId/${resourceEntry[0]}`, route.router);
             }
         });
     }
@@ -141,6 +144,7 @@ export function generateServerlessRouter(
         // Set up Resource for each generic resource
         genericFhirResources.forEach(async (resourceType: string) => {
             app.use(`/${resourceType}`, genericRoute.router);
+            app.use(`/tenant/:tenantId/${resourceType}`, genericRoute.router);
         });
     }
 
@@ -159,6 +163,7 @@ export function generateServerlessRouter(
             fhirConfig.profile.resources,
         );
         app.use('/', rootRoute.router);
+        app.use('/tenant/:tenantId/', rootRoute.router);
     }
 
     app.use(applicationErrorMapper);

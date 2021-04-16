@@ -25,6 +25,7 @@ import {
     InitiateExportRequest,
     GetExportStatusResponse,
 } from 'fhir-works-on-aws-interface';
+import each from 'jest-each';
 import ResourceHandler from './resourceHandler';
 import invalidPatient from '../../../sampleData/invalidV4Patient.json';
 import validPatient from '../../../sampleData/validV4Patient.json';
@@ -49,7 +50,7 @@ describe('SUCCESS CASES: Testing create, read, update, delete of resources', () 
         [new JsonSchemaValidator('4.0.1')],
     );
 
-    test('create: patient', async () => {
+    each(['', 'custom-tenant']).it('create: patient', async tenantId => {
         // BUILD
         const expectedValidPatient = { ...validPatient } as any;
 
@@ -57,7 +58,7 @@ describe('SUCCESS CASES: Testing create, read, update, delete of resources', () 
         delete expectedValidPatient.id;
 
         // OPERATE
-        const createResponse = await resourceHandler.create('Patient', validPatient);
+        const createResponse = await resourceHandler.create('Patient', validPatient, tenantId);
 
         // CHECK
         // TODO spy on DS and ensure ID being passed in is not the expectedValidPatient.id
@@ -69,14 +70,14 @@ describe('SUCCESS CASES: Testing create, read, update, delete of resources', () 
         expect(createResponse).toMatchObject(expectedValidPatient);
     });
 
-    test('get: patient', async () => {
+    each(['', 'custom-tenant']).it('get: patient', async tenantId => {
         // BUILD
         const id = uuidv4();
         const expectedValidPatient = { ...validPatient };
         expectedValidPatient.id = id;
 
         // OPERATE
-        const getResponse: any = await resourceHandler.read('Patient', id);
+        const getResponse: any = await resourceHandler.read('Patient', id, tenantId);
 
         // CHECK
         expect(getResponse.meta).toBeDefined();
@@ -86,7 +87,7 @@ describe('SUCCESS CASES: Testing create, read, update, delete of resources', () 
         expect(getResponse).toMatchObject(expectedValidPatient);
     });
 
-    test('vread: patient', async () => {
+    each(['', 'custom-tenant']).it('vread: patient', async tenantId => {
         // BUILD
         const id = uuidv4();
         const vid = '1';
@@ -94,7 +95,7 @@ describe('SUCCESS CASES: Testing create, read, update, delete of resources', () 
         expectedValidPatient.id = id;
 
         // OPERATE
-        const getResponse: any = await resourceHandler.vRead('Patient', id, vid);
+        const getResponse: any = await resourceHandler.vRead('Patient', id, vid, tenantId);
 
         // CHECK
         expect(getResponse.meta).toBeDefined();
@@ -104,14 +105,14 @@ describe('SUCCESS CASES: Testing create, read, update, delete of resources', () 
         expect(getResponse).toMatchObject(expectedValidPatient);
     });
 
-    test('update: patient', async () => {
+    each(['', 'custom-tenant']).it('update: patient', async tenantId => {
         // BUILD
         const id = uuidv4();
         const expectedValidPatient = { ...validPatient };
         expectedValidPatient.id = id;
 
         // OPERATE
-        const updateResponse = await resourceHandler.update('Patient', id, validPatient);
+        const updateResponse = await resourceHandler.update('Patient', id, validPatient, tenantId);
 
         // CHECK
         // TODO spy on DS and ensure ID being passed in is the expectedValidPatient.id & versionId is set to 2
@@ -123,14 +124,14 @@ describe('SUCCESS CASES: Testing create, read, update, delete of resources', () 
         expect(updateResponse).toMatchObject(expectedValidPatient);
     });
 
-    test('patch: patient', async () => {
+    each(['', 'custom-tenant']).it('patch: patient', async tenantId => {
         // BUILD
         const id = uuidv4();
         const expectedValidPatient = { ...validPatient };
         expectedValidPatient.id = id;
 
         // OPERATE
-        const patchResponse = await resourceHandler.patch('Patient', id, validPatient);
+        const patchResponse = await resourceHandler.patch('Patient', id, validPatient, tenantId);
 
         // CHECK
         // TODO spy on DS and ensure ID being passed in is the expectedValidPatient.id & versionId is set to 2
@@ -142,16 +143,16 @@ describe('SUCCESS CASES: Testing create, read, update, delete of resources', () 
         expect(patchResponse).toMatchObject(expectedValidPatient);
     });
 
-    test('delete: patient', async () => {
+    each(['', 'custom-tenant']).it('delete: patient', async tenantId => {
         // BUILD
         const id = uuidv4();
         // OPERATE
-        const deleteResponse = await resourceHandler.delete('Patient', id);
+        const deleteResponse = await resourceHandler.delete('Patient', id, tenantId);
         // CHECK
         expect(deleteResponse).toEqual(OperationsGenerator.generateSuccessfulDeleteOperation(1));
     });
 });
-describe('ERROR CASES: Testing create, read, update, delete of resources', () => {
+describe('ERROR CASES: Testing create, read, update, delete of resources with default tenant', () => {
     const dbError = new Error('Some database error');
     const mockedDataService: Persistence = class {
         static updateCreateSupported: boolean = false;
@@ -238,11 +239,11 @@ describe('ERROR CASES: Testing create, read, update, delete of resources', () =>
         expect.hasAssertions();
     });
 
-    test('create: invalid patient', async () => {
+    each(['', 'custom-tenant']).it('create: invalid patient', async tenantId => {
         // BUILD
         try {
             // OPERATE
-            await resourceHandler.create('Patient', invalidPatient);
+            await resourceHandler.create('Patient', invalidPatient, tenantId);
         } catch (e) {
             // CHECK
             expect(e).toEqual(
@@ -253,23 +254,23 @@ describe('ERROR CASES: Testing create, read, update, delete of resources', () =>
         }
     });
 
-    test('create: Data Service failure', async () => {
+    each(['', 'custom-tenant']).it('create: Data Service failure', async tenantId => {
         // BUILD
         try {
             // OPERATE
-            await resourceHandler.create('Patient', validPatient);
+            await resourceHandler.create('Patient', validPatient, tenantId);
         } catch (e) {
             // CHECK
             expect(e).toEqual(dbError);
         }
     });
 
-    test('update: invalid patient', async () => {
+    each(['', 'custom-tenant']).it('update: invalid patient', async tenantId => {
         // BUILD
         const id = uuidv4();
         try {
             // OPERATE
-            await resourceHandler.update('Patient', id, invalidPatient);
+            await resourceHandler.update('Patient', id, invalidPatient, tenantId);
         } catch (e) {
             // CHECK
             expect(e).toEqual(
@@ -280,36 +281,36 @@ describe('ERROR CASES: Testing create, read, update, delete of resources', () =>
         }
     });
 
-    test('update: resource that does not exist', async () => {
+    each(['', 'custom-tenant']).it('update: resource that does not exist', async tenantId => {
         // BUILD
         const id = uuidv4();
         try {
             // OPERATE
-            await resourceHandler.update('Patient', id, validPatient);
+            await resourceHandler.update('Patient', id, validPatient, tenantId);
         } catch (e) {
             // CHECK
             expect(e).toEqual(new ResourceNotFoundError('Patient', id));
         }
     });
 
-    test('patch: Data Service failure', async () => {
+    each(['', 'custom-tenant']).it('patch: Data Service failure', async tenantId => {
         // BUILD
         const id = uuidv4();
         try {
             // OPERATE
-            await resourceHandler.patch('Patient', id, validPatient);
+            await resourceHandler.patch('Patient', id, validPatient, tenantId);
         } catch (e) {
             // CHECK
             expect(e).toEqual(dbError);
         }
     });
 
-    test('get: resource that does not exist', async () => {
+    each(['', 'custom-tenant']).it('get: resource that does not exist', async tenantId => {
         // BUILD
         const id = uuidv4();
         try {
             // OPERATE
-            await resourceHandler.read('Patient', id);
+            await resourceHandler.read('Patient', id, tenantId);
         } catch (e) {
             // CHECK
             console.log(e);
@@ -317,25 +318,25 @@ describe('ERROR CASES: Testing create, read, update, delete of resources', () =>
         }
     });
 
-    test('history: resource that does not exist', async () => {
+    each(['', 'custom-tenant']).it('history: resource that does not exist', async tenantId => {
         // BUILD
         const id = uuidv4();
         const vid = '1';
         try {
             // OPERATE
-            await resourceHandler.vRead('Patient', id, vid);
+            await resourceHandler.vRead('Patient', id, vid, tenantId);
         } catch (e) {
             // CHECK
             expect(e).toEqual(new ResourceVersionNotFoundError('Patient', id, vid));
         }
     });
 
-    test('delete patient that does NOT exist', async () => {
+    each(['', 'custom-tenant']).it('delete patient that does NOT exist', async tenantId => {
         // BUILD
         const id = uuidv4();
         try {
             // OPERATE
-            await resourceHandler.delete('Patient', id);
+            await resourceHandler.delete('Patient', id, tenantId);
         } catch (e) {
             // CHECK
             expect(e).toEqual(new ResourceNotFoundError('Patient', id));
@@ -364,7 +365,7 @@ describe('Testing search', () => {
         expect.hasAssertions();
     });
 
-    test('Search for a patient that exist', async () => {
+    each(['', 'custom-tenant']).it('Search for a patient that exist', async tenantId => {
         // BUILD
         const resourceHandler = initializeResourceHandler({
             result: {
@@ -388,6 +389,7 @@ describe('Testing search', () => {
             { name: 'Henry' },
             ['Patient', 'Practitioner'],
             {},
+            tenantId,
         );
 
         // CHECK
@@ -399,15 +401,17 @@ describe('Testing search', () => {
             },
             resourceType: 'Patient',
             searchFilters: [],
+            tenantId: tenantId ? `${tenantId}` : '',
         });
         expect(searchResponse.resourceType).toEqual('Bundle');
         expect(searchResponse.meta).toBeDefined();
         expect(searchResponse.type).toEqual('searchset');
         expect(searchResponse.total).toEqual(1);
+        const expectedTenantUrlFragment = tenantId ? `/tenant/${tenantId}` : '';
         expect(searchResponse.link).toEqual([
             {
                 relation: 'self',
-                url: 'https://API_URL.com/Patient?name=Henry',
+                url: `https://API_URL.com${expectedTenantUrlFragment}/Patient?name=Henry`,
             },
         ]);
 
@@ -422,7 +426,7 @@ describe('Testing search', () => {
         ]);
     });
 
-    test('Search for a patient that does NOT exist', async () => {
+    each(['', 'custom-tenant']).it('Search for a patient that does NOT exist', async tenantId => {
         // BUILD
         const resourceHandler = initializeResourceHandler({
             result: {
@@ -433,31 +437,32 @@ describe('Testing search', () => {
         });
 
         // OPERATE
-        const searchResponse: any = await resourceHandler.typeSearch('Patient', { name: 'Henry' }, [], {});
+        const searchResponse: any = await resourceHandler.typeSearch('Patient', { name: 'Henry' }, [], {}, tenantId);
 
         // CHECK
         expect(searchResponse.resourceType).toEqual('Bundle');
         expect(searchResponse.meta).toBeDefined();
         expect(searchResponse.type).toEqual('searchset');
         expect(searchResponse.total).toEqual(0);
+        const expectedTenantUrlFragment = tenantId ? `/tenant/${tenantId}` : '';
         expect(searchResponse.link).toEqual([
             {
                 relation: 'self',
-                url: 'https://API_URL.com/Patient?name=Henry',
+                url: `https://API_URL.com${expectedTenantUrlFragment}/Patient?name=Henry`,
             },
         ]);
 
         expect(searchResponse.entry).toEqual([]);
     });
 
-    test('Search for a patient fails', async () => {
+    each(['', 'custom-tenant']).it('Search for a patient fails', async tenantId => {
         // BUILD
         const failureMessage = 'Failure';
         const resourceHandler = initializeResourceHandler();
         ElasticSearchService.typeSearch = jest.fn().mockRejectedValue(new Error('Boom!!'));
         try {
             // OPERATE
-            await resourceHandler.typeSearch('Patient', { name: 'Henry' }, [], {});
+            await resourceHandler.typeSearch('Patient', { name: 'Henry' }, [], {}, tenantId);
         } catch (e) {
             // CHECK
             expect(e).toEqual(new Error('Boom!!'));
@@ -465,16 +470,17 @@ describe('Testing search', () => {
     });
 
     describe('Pagination', () => {
-        test('Pagination with a next page link', async () => {
+        each(['', 'custom-tenant']).it('Pagination with a next page link', async tenantId => {
             // BUILD
+            const expectedTenantUrlFragment = tenantId ? `/tenant/${tenantId}` : '';
             const resourceHandler = initializeResourceHandler({
                 result: {
-                    nextResultUrl: 'https://API_URL.com/Patient?name=Henry&_getpagesoffset=1&_count=1',
+                    nextResultUrl: `https://API_URL.com${expectedTenantUrlFragment}/Patient?name=Henry&_getpagesoffset=1&_count=1`,
                     numberOfResults: 2,
                     message: '',
                     entries: [
                         {
-                            fullUrl: 'https://API_URL.com/Patient/xcda',
+                            fullUrl: `https://API_URL.com${expectedTenantUrlFragment}/Patient/xcda`,
                             resource: validPatient,
                             search: {
                                 mode: 'match',
@@ -494,6 +500,7 @@ describe('Testing search', () => {
                 },
                 [],
                 {},
+                tenantId,
             );
 
             // CHECK
@@ -501,14 +508,15 @@ describe('Testing search', () => {
             expect(searchResponse.meta).toBeDefined();
             expect(searchResponse.type).toEqual('searchset');
             expect(searchResponse.total).toEqual(2);
+
             expect(searchResponse.link).toEqual([
                 {
                     relation: 'self',
-                    url: 'https://API_URL.com/Patient?name=Henry&_getpagesoffset=0&_count=1',
+                    url: `https://API_URL.com${expectedTenantUrlFragment}/Patient?name=Henry&_getpagesoffset=0&_count=1`,
                 },
                 {
                     relation: 'next',
-                    url: 'https://API_URL.com/Patient?name=Henry&_getpagesoffset=1&_count=1',
+                    url: `https://API_URL.com${expectedTenantUrlFragment}/Patient?name=Henry&_getpagesoffset=1&_count=1`,
                 },
             ]);
 
@@ -517,21 +525,22 @@ describe('Testing search', () => {
                     search: {
                         mode: 'match',
                     },
-                    fullUrl: 'https://API_URL.com/Patient/xcda',
+                    fullUrl: `https://API_URL.com${expectedTenantUrlFragment}/Patient/xcda`,
                     resource: validPatient,
                 },
             ]);
         });
-        test('Pagination with a previous page link', async () => {
+        each(['', 'custom-tenant']).it('Pagination with a previous page link', async tenantId => {
             // BUILD
+            const expectedTenantUrlFragment = tenantId ? `/tenant/${tenantId}` : '';
             const resourceHandler = initializeResourceHandler({
                 result: {
-                    previousResultUrl: 'https://API_URL.com/Patient?name=Henry&_getpagesoffset=0&_count=1',
+                    previousResultUrl: `https://API_URL.com${expectedTenantUrlFragment}/Patient?name=Henry&_getpagesoffset=0&_count=1`,
                     numberOfResults: 2,
                     message: '',
                     entries: [
                         {
-                            fullUrl: 'https://API_URL.com/Patient/xcda',
+                            fullUrl: `https://API_URL.com${expectedTenantUrlFragment}/Patient/xcda`,
                             resource: validPatient,
                             search: {
                                 mode: 'match',
@@ -551,6 +560,7 @@ describe('Testing search', () => {
                 },
                 [],
                 {},
+                tenantId,
             );
 
             // CHECK
@@ -561,11 +571,11 @@ describe('Testing search', () => {
             expect(searchResponse.link).toEqual([
                 {
                     relation: 'self',
-                    url: 'https://API_URL.com/Patient?name=Henry&_getpagesoffset=1&_count=1',
+                    url: `https://API_URL.com${expectedTenantUrlFragment}/Patient?name=Henry&_getpagesoffset=1&_count=1`,
                 },
                 {
                     relation: 'previous',
-                    url: 'https://API_URL.com/Patient?name=Henry&_getpagesoffset=0&_count=1',
+                    url: `https://API_URL.com${expectedTenantUrlFragment}/Patient?name=Henry&_getpagesoffset=0&_count=1`,
                 },
             ]);
 
@@ -574,22 +584,23 @@ describe('Testing search', () => {
                     search: {
                         mode: 'match',
                     },
-                    fullUrl: 'https://API_URL.com/Patient/xcda',
+                    fullUrl: `https://API_URL.com${expectedTenantUrlFragment}/Patient/xcda`,
                     resource: validPatient,
                 },
             ]);
         });
-        test('Pagination with a previous page link and a next page link', async () => {
+        each(['', 'custom-tenant']).it('Pagination with a previous page link and a next page link', async tenantId => {
             // BUILD
+            const expectedTenantUrlFragment = tenantId ? `/tenant/${tenantId}` : '';
             const resourceHandler = initializeResourceHandler({
                 result: {
-                    nextResultUrl: 'https://API_URL.com/Patient?name=Henry&_getpagesoffset=2&_count=1',
-                    previousResultUrl: 'https://API_URL.com/Patient?name=Henry&_getpagesoffset=0&_count=1',
+                    nextResultUrl: `https://API_URL.com${expectedTenantUrlFragment}/Patient?name=Henry&_getpagesoffset=2&_count=1`,
+                    previousResultUrl: `https://API_URL.com${expectedTenantUrlFragment}/Patient?name=Henry&_getpagesoffset=0&_count=1`,
                     numberOfResults: 3,
                     message: '',
                     entries: [
                         {
-                            fullUrl: 'https://API_URL.com/Patient/xcda',
+                            fullUrl: `https://API_URL.com${expectedTenantUrlFragment}/Patient/xcda`,
                             resource: validPatient,
                             search: {
                                 mode: 'match',
@@ -608,6 +619,7 @@ describe('Testing search', () => {
                 },
                 [],
                 {},
+                tenantId,
             );
 
             // CHECK
@@ -615,18 +627,19 @@ describe('Testing search', () => {
             expect(searchResponse.meta).toBeDefined();
             expect(searchResponse.type).toEqual('searchset');
             expect(searchResponse.total).toEqual(3);
+
             expect(searchResponse.link).toEqual([
                 {
                     relation: 'self',
-                    url: 'https://API_URL.com/Patient?name=Henry&_getpagesoffset=1&_count=1',
+                    url: `https://API_URL.com${expectedTenantUrlFragment}/Patient?name=Henry&_getpagesoffset=1&_count=1`,
                 },
                 {
                     relation: 'previous',
-                    url: 'https://API_URL.com/Patient?name=Henry&_getpagesoffset=0&_count=1',
+                    url: `https://API_URL.com${expectedTenantUrlFragment}/Patient?name=Henry&_getpagesoffset=0&_count=1`,
                 },
                 {
                     relation: 'next',
-                    url: 'https://API_URL.com/Patient?name=Henry&_getpagesoffset=2&_count=1',
+                    url: `https://API_URL.com${expectedTenantUrlFragment}/Patient?name=Henry&_getpagesoffset=2&_count=1`,
                 },
             ]);
 
@@ -635,7 +648,7 @@ describe('Testing search', () => {
                     search: {
                         mode: 'match',
                     },
-                    fullUrl: 'https://API_URL.com/Patient/xcda',
+                    fullUrl: `https://API_URL.com${expectedTenantUrlFragment}/Patient/xcda`,
                     resource: validPatient,
                 },
             ]);
@@ -664,7 +677,9 @@ describe('Testing history', () => {
         expect.hasAssertions();
     });
 
-    test('History for a patient that exist', async () => {
+    each(['', 'custom-tenant']).it('History for a patient that exist for tenant %s', async tenantId => {
+        const expectedTenantUrlFragment = tenantId ? `/tenant/${tenantId}` : '';
+        const fullUrl = `https://API_URL.com${expectedTenantUrlFragment}/Patient/xcda`;
         // BUILD
         const resourceHandler = initializeResourceHandler({
             result: {
@@ -672,7 +687,7 @@ describe('Testing history', () => {
                 message: '',
                 entries: [
                     {
-                        fullUrl: 'https://API_URL.com/Patient/xcda',
+                        fullUrl,
                         resource: validPatient,
                         search: {
                             mode: 'match',
@@ -683,17 +698,18 @@ describe('Testing history', () => {
         });
 
         // OPERATE
-        const searchResponse: any = await resourceHandler.typeHistory('Patient', { name: 'Henry' }, {});
+        const searchResponse: any = await resourceHandler.typeHistory('Patient', { name: 'Henry' }, {}, tenantId);
 
         // CHECK
         expect(searchResponse.resourceType).toEqual('Bundle');
         expect(searchResponse.meta).toBeDefined();
         expect(searchResponse.type).toEqual('history');
         expect(searchResponse.total).toEqual(1);
+
         expect(searchResponse.link).toEqual([
             {
                 relation: 'self',
-                url: 'https://API_URL.com/Patient/_history?name=Henry',
+                url: `https://API_URL.com${expectedTenantUrlFragment}/Patient/_history?name=Henry`,
             },
         ]);
 
@@ -702,13 +718,13 @@ describe('Testing history', () => {
                 search: {
                     mode: 'match',
                 },
-                fullUrl: 'https://API_URL.com/Patient/xcda',
+                fullUrl: `https://API_URL.com${expectedTenantUrlFragment}/Patient/xcda`,
                 resource: validPatient,
             },
         ]);
     });
 
-    test('History for a patient that does NOT exist', async () => {
+    each(['', 'custom-tenant']).it('History for a patient that does NOT exist', async tenantId => {
         // BUILD
         const resourceHandler = initializeResourceHandler({
             result: {
@@ -719,7 +735,9 @@ describe('Testing history', () => {
         });
 
         // OPERATE
-        const searchResponse: any = await resourceHandler.typeHistory('Patient', { name: 'Henry' }, {});
+        const searchResponse: any = await resourceHandler.typeHistory('Patient', { name: 'Henry' }, {}, tenantId);
+
+        const expectedTenantUrlFragment = tenantId ? `/tenant/${tenantId}` : '';
 
         // CHECK
         expect(searchResponse.resourceType).toEqual('Bundle');
@@ -729,28 +747,28 @@ describe('Testing history', () => {
         expect(searchResponse.link).toEqual([
             {
                 relation: 'self',
-                url: 'https://API_URL.com/Patient/_history?name=Henry',
+                url: `https://API_URL.com${expectedTenantUrlFragment}/Patient/_history?name=Henry`,
             },
         ]);
 
         expect(searchResponse.entry).toEqual([]);
     });
 
-    test('History type for a patient fails', async () => {
+    each(['', 'custom-tenant']).it('History type for a patient fails', async tenantId => {
         // BUILD
         const failureMessage = 'Failure';
         const resourceHandler = initializeResourceHandler();
         stubs.history.typeHistory = jest.fn().mockRejectedValue(new Error('Boom!!'));
         try {
             // OPERATE
-            await resourceHandler.typeHistory('Patient', { name: 'Henry' }, {});
+            await resourceHandler.typeHistory('Patient', { name: 'Henry' }, {}, tenantId);
         } catch (e) {
             // CHECK
             expect(e).toEqual(new Error('Boom!!'));
         }
     });
 
-    test('Instance History for a patient returns a Patient', async () => {
+    each(['', 'custom-tenant']).it('Instance History for a patient returns a Patient', async tenantId => {
         // BUILD
         const resourceHandler = initializeResourceHandler({
             result: {
@@ -769,7 +787,15 @@ describe('Testing history', () => {
         });
 
         // OPERATE
-        const searchResponse: any = await resourceHandler.instanceHistory('Patient', 'id123', { name: 'Henry' }, {});
+        const searchResponse: any = await resourceHandler.instanceHistory(
+            'Patient',
+            'id123',
+            { name: 'Henry' },
+            {},
+            tenantId,
+        );
+
+        const expectedTenantUrlFragment = tenantId ? `/tenant/${tenantId}` : '';
 
         // CHECK
         expect(searchResponse.resourceType).toEqual('Bundle');
@@ -779,7 +805,7 @@ describe('Testing history', () => {
         expect(searchResponse.link).toEqual([
             {
                 relation: 'self',
-                url: 'https://API_URL.com/Patient/id123/_history?name=Henry',
+                url: `https://API_URL.com${expectedTenantUrlFragment}/Patient/id123/_history?name=Henry`,
             },
         ]);
 
@@ -794,13 +820,13 @@ describe('Testing history', () => {
         ]);
     });
 
-    test('Instance History for a patient fails', async () => {
+    each(['', 'custom-tenant']).it('Instance History for a patient fails', async tenantId => {
         // BUILD
         const resourceHandler = initializeResourceHandler();
         stubs.history.instanceHistory = jest.fn().mockRejectedValue(new Error('Boom!!'));
         try {
             // OPERATE
-            await resourceHandler.instanceHistory('Patient', 'id123', { name: 'Henry' }, {});
+            await resourceHandler.instanceHistory('Patient', 'id123', { name: 'Henry' }, {}, tenantId);
         } catch (e) {
             // CHECK
             expect(e).toEqual(new Error('Boom!!'));
@@ -808,16 +834,17 @@ describe('Testing history', () => {
     });
 
     describe('Pagination', () => {
-        test('Pagination with a next page link', async () => {
+        each(['', 'custom-tenant']).it('Pagination with a next page link', async tenantId => {
             // BUILD
+            const expectedTenantUrlFragment = tenantId ? `/tenant/${tenantId}` : '';
             const resourceHandler = initializeResourceHandler({
                 result: {
-                    nextResultUrl: 'https://API_URL.com/Patient/_history?name=Henry&_getpagesoffset=1&_count=1',
+                    nextResultUrl: `https://API_URL.com${expectedTenantUrlFragment}/Patient/_history?name=Henry&_getpagesoffset=1&_count=1`,
                     numberOfResults: 2,
                     message: '',
                     entries: [
                         {
-                            fullUrl: 'https://API_URL.com/Patient/xcda',
+                            fullUrl: `https://API_URL.com${expectedTenantUrlFragment}/Patient/xcda`,
                             resource: validPatient,
                             search: {
                                 mode: 'match',
@@ -836,6 +863,7 @@ describe('Testing history', () => {
                     [SEARCH_PAGINATION_PARAMS.COUNT]: 1,
                 },
                 {},
+                tenantId,
             );
 
             // CHECK
@@ -846,11 +874,11 @@ describe('Testing history', () => {
             expect(searchResponse.link).toEqual([
                 {
                     relation: 'self',
-                    url: 'https://API_URL.com/Patient/_history?name=Henry&_getpagesoffset=0&_count=1',
+                    url: `https://API_URL.com${expectedTenantUrlFragment}/Patient/_history?name=Henry&_getpagesoffset=0&_count=1`,
                 },
                 {
                     relation: 'next',
-                    url: 'https://API_URL.com/Patient/_history?name=Henry&_getpagesoffset=1&_count=1',
+                    url: `https://API_URL.com${expectedTenantUrlFragment}/Patient/_history?name=Henry&_getpagesoffset=1&_count=1`,
                 },
             ]);
 
@@ -859,21 +887,22 @@ describe('Testing history', () => {
                     search: {
                         mode: 'match',
                     },
-                    fullUrl: 'https://API_URL.com/Patient/xcda',
+                    fullUrl: `https://API_URL.com${expectedTenantUrlFragment}/Patient/xcda`,
                     resource: validPatient,
                 },
             ]);
         });
-        test('Pagination with a previous page link', async () => {
+        each(['', 'custom-tenant']).it('Pagination with a previous page link', async tenantId => {
             // BUILD
+            const expectedTenantUrlFragment = tenantId ? `/tenant/${tenantId}` : '';
             const resourceHandler = initializeResourceHandler({
                 result: {
-                    previousResultUrl: 'https://API_URL.com/Patient/_history?name=Henry&_getpagesoffset=0&_count=1',
+                    previousResultUrl: `https://API_URL.com${expectedTenantUrlFragment}/Patient/_history?name=Henry&_getpagesoffset=0&_count=1`,
                     numberOfResults: 2,
                     message: '',
                     entries: [
                         {
-                            fullUrl: 'https://API_URL.com/Patient/xcda',
+                            fullUrl: `https://API_URL.com${expectedTenantUrlFragment}/Patient/xcda`,
                             resource: validPatient,
                             search: {
                                 mode: 'match',
@@ -892,6 +921,7 @@ describe('Testing history', () => {
                     [SEARCH_PAGINATION_PARAMS.COUNT]: 1,
                 },
                 {},
+                tenantId,
             );
 
             // CHECK
@@ -902,11 +932,11 @@ describe('Testing history', () => {
             expect(searchResponse.link).toEqual([
                 {
                     relation: 'self',
-                    url: 'https://API_URL.com/Patient/_history?name=Henry&_getpagesoffset=1&_count=1',
+                    url: `https://API_URL.com${expectedTenantUrlFragment}/Patient/_history?name=Henry&_getpagesoffset=1&_count=1`,
                 },
                 {
                     relation: 'previous',
-                    url: 'https://API_URL.com/Patient/_history?name=Henry&_getpagesoffset=0&_count=1',
+                    url: `https://API_URL.com${expectedTenantUrlFragment}/Patient/_history?name=Henry&_getpagesoffset=0&_count=1`,
                 },
             ]);
 
@@ -915,22 +945,23 @@ describe('Testing history', () => {
                     search: {
                         mode: 'match',
                     },
-                    fullUrl: 'https://API_URL.com/Patient/xcda',
+                    fullUrl: `https://API_URL.com${expectedTenantUrlFragment}/Patient/xcda`,
                     resource: validPatient,
                 },
             ]);
         });
-        test('Pagination with a previous page link and a next page link', async () => {
+        each(['', 'custom-tenant']).it('Pagination with a previous page link and a next page link', async tenantId => {
             // BUILD
+            const expectedTenantUrlFragment = tenantId ? `/tenant/${tenantId}` : '';
             const resourceHandler = initializeResourceHandler({
                 result: {
-                    nextResultUrl: 'https://API_URL.com/Patient/_history?name=Henry&_getpagesoffset=2&_count=1',
-                    previousResultUrl: 'https://API_URL.com/Patient/_history?name=Henry&_getpagesoffset=0&_count=1',
+                    nextResultUrl: `https://API_URL.com${expectedTenantUrlFragment}/Patient/_history?name=Henry&_getpagesoffset=2&_count=1`,
+                    previousResultUrl: `https://API_URL.com${expectedTenantUrlFragment}/Patient/_history?name=Henry&_getpagesoffset=0&_count=1`,
                     numberOfResults: 3,
                     message: '',
                     entries: [
                         {
-                            fullUrl: 'https://API_URL.com/Patient/xcda',
+                            fullUrl: `https://API_URL.com${expectedTenantUrlFragment}/Patient/xcda`,
                             resource: validPatient,
                             search: {
                                 mode: 'match',
@@ -949,6 +980,7 @@ describe('Testing history', () => {
                     [SEARCH_PAGINATION_PARAMS.COUNT]: 1,
                 },
                 {},
+                tenantId,
             );
 
             // CHECK
@@ -959,15 +991,15 @@ describe('Testing history', () => {
             expect(searchResponse.link).toEqual([
                 {
                     relation: 'self',
-                    url: 'https://API_URL.com/Patient/_history?name=Henry&_getpagesoffset=1&_count=1',
+                    url: `https://API_URL.com${expectedTenantUrlFragment}/Patient/_history?name=Henry&_getpagesoffset=1&_count=1`,
                 },
                 {
                     relation: 'previous',
-                    url: 'https://API_URL.com/Patient/_history?name=Henry&_getpagesoffset=0&_count=1',
+                    url: `https://API_URL.com${expectedTenantUrlFragment}/Patient/_history?name=Henry&_getpagesoffset=0&_count=1`,
                 },
                 {
                     relation: 'next',
-                    url: 'https://API_URL.com/Patient/_history?name=Henry&_getpagesoffset=2&_count=1',
+                    url: `https://API_URL.com${expectedTenantUrlFragment}/Patient/_history?name=Henry&_getpagesoffset=2&_count=1`,
                 },
             ]);
 
@@ -976,7 +1008,7 @@ describe('Testing history', () => {
                     search: {
                         mode: 'match',
                     },
-                    fullUrl: 'https://API_URL.com/Patient/xcda',
+                    fullUrl: `https://API_URL.com${expectedTenantUrlFragment}/Patient/xcda`,
                     resource: validPatient,
                 },
             ]);

@@ -421,7 +421,9 @@ describe('ERROR Cases: Validation of Bundle request', () => {
         const bundleRequestJSON = clone(sampleBundleRequestJSON);
         bundleRequestJSON.entry.push(invalidReadRequest);
 
-        await expect(bundleHandlerR4.processTransaction(bundleRequestJSON, practitionerDecoded)).rejects.toThrowError(
+        await expect(
+            bundleHandlerR4.processTransaction(bundleRequestJSON, practitionerDecoded, ''),
+        ).rejects.toThrowError(
             new InvalidResourceError(
                 'Failed to parse request body as JSON resource. Error was: data.entry[0].request should NOT have additional properties',
             ),
@@ -432,7 +434,9 @@ describe('ERROR Cases: Validation of Bundle request', () => {
         const bundleRequestJSON = clone(sampleBundleRequestJSON);
         bundleRequestJSON.total = 'abc';
 
-        await expect(bundleHandlerSTU3.processTransaction(bundleRequestJSON, practitionerDecoded)).rejects.toThrowError(
+        await expect(
+            bundleHandlerSTU3.processTransaction(bundleRequestJSON, practitionerDecoded, ''),
+        ).rejects.toThrowError(
             new InvalidResourceError(
                 'Failed to parse request body as JSON resource. Error was: data.total should be number, data.total should match pattern "[0]|([1-9][0-9]*)"',
             ),
@@ -443,9 +447,9 @@ describe('ERROR Cases: Validation of Bundle request', () => {
         const bundleRequestJSON = clone(sampleBundleRequestJSON);
         delete bundleRequestJSON.resourceType;
 
-        await expect(bundleHandlerSTU3.processTransaction(bundleRequestJSON, practitionerDecoded)).rejects.toThrowError(
-            new InvalidResourceError("resource should have required property 'resourceType'"),
-        );
+        await expect(
+            bundleHandlerSTU3.processTransaction(bundleRequestJSON, practitionerDecoded, ''),
+        ).rejects.toThrowError(new InvalidResourceError("resource should have required property 'resourceType'"));
     });
 
     test('Bundle request has unsupported operation: SEARCH', async () => {
@@ -460,9 +464,9 @@ describe('ERROR Cases: Validation of Bundle request', () => {
         const bundleRequestJSON = clone(sampleBundleRequestJSON);
         bundleRequestJSON.entry.push(searchRequest);
 
-        await expect(bundleHandlerR4.processTransaction(bundleRequestJSON, practitionerDecoded)).rejects.toThrowError(
-            new createError.BadRequest('We currently do not support SEARCH entries in the Bundle'),
-        );
+        await expect(
+            bundleHandlerR4.processTransaction(bundleRequestJSON, practitionerDecoded, ''),
+        ).rejects.toThrowError(new createError.BadRequest('We currently do not support SEARCH entries in the Bundle'));
     });
 
     test('Bundle request has unsupported operation: VREAD', async () => {
@@ -477,9 +481,9 @@ describe('ERROR Cases: Validation of Bundle request', () => {
         const bundleRequestJSON = clone(sampleBundleRequestJSON);
         bundleRequestJSON.entry.push(vreadRequest);
 
-        await expect(bundleHandlerR4.processTransaction(bundleRequestJSON, practitionerDecoded)).rejects.toThrowError(
-            new createError.BadRequest('We currently do not support V_READ entries in the Bundle'),
-        );
+        await expect(
+            bundleHandlerR4.processTransaction(bundleRequestJSON, practitionerDecoded, ''),
+        ).rejects.toThrowError(new createError.BadRequest('We currently do not support V_READ entries in the Bundle'));
     });
 
     test('Bundle request has too many entries', async () => {
@@ -493,7 +497,9 @@ describe('ERROR Cases: Validation of Bundle request', () => {
             };
             bundleRequestJSON.entry.push(readRequest);
         }
-        await expect(bundleHandlerR4.processTransaction(bundleRequestJSON, practitionerDecoded)).rejects.toThrowError(
+        await expect(
+            bundleHandlerR4.processTransaction(bundleRequestJSON, practitionerDecoded, ''),
+        ).rejects.toThrowError(
             new createError.BadRequest(
                 `Maximum number of entries for a Bundle is ${MAX_BUNDLE_ENTRIES}. There are currently ${bundleRequestJSON.entry.length} entries in this Bundle`,
             ),
@@ -507,7 +513,7 @@ describe('SUCCESS Cases: Testing Bundle with CRUD entries', () => {
         const bundleRequestJSON = clone(sampleBundleRequestJSON);
         bundleRequestJSON.entry = bundleRequestJSON.entry.concat(sampleCrudEntries);
 
-        const actualResult = await bundleHandlerR4.processTransaction(bundleRequestJSON, practitionerDecoded);
+        const actualResult = await bundleHandlerR4.processTransaction(bundleRequestJSON, practitionerDecoded, '');
 
         const expectedResult = {
             resourceType: 'Bundle',
@@ -585,7 +591,7 @@ describe('SUCCESS Cases: Testing Bundle with CRUD entries', () => {
     test('Bundle request is empty', async () => {
         const bundleRequestJSON = clone(sampleBundleRequestJSON);
 
-        const actualResult = await bundleHandlerR4.processTransaction(bundleRequestJSON, practitionerDecoded);
+        const actualResult = await bundleHandlerR4.processTransaction(bundleRequestJSON, practitionerDecoded, '');
 
         expect(actualResult).toMatchObject({
             resourceType: 'Bundle',
@@ -644,7 +650,7 @@ describe('ERROR Cases: Bundle not authorized', () => {
         bundleRequestJSON.entry = bundleRequestJSON.entry.concat(sampleCrudEntries);
 
         await expect(
-            bundleHandlerWithStubbedAuthZ.processTransaction(bundleRequestJSON, practitionerDecoded),
+            bundleHandlerWithStubbedAuthZ.processTransaction(bundleRequestJSON, practitionerDecoded, ''),
         ).rejects.toThrowError(new UnauthorizedError('An entry within the Bundle is not authorized'));
     });
 
@@ -733,7 +739,7 @@ describe('ERROR Cases: Bundle not authorized', () => {
             ],
         };
         await expect(
-            bundleHandlerWithStubbedAuthZ.processTransaction(bundleRequestJSON, practitionerDecoded),
+            bundleHandlerWithStubbedAuthZ.processTransaction(bundleRequestJSON, practitionerDecoded, ''),
         ).resolves.toMatchObject(expectedResult);
     });
 });
@@ -792,6 +798,7 @@ describe('SERVER-CAPABILITIES Cases: Validating Bundle request is allowed given 
                 bundleHandlerReadGenericResource.processTransaction(
                     bundleRequestJsonCreatePatient,
                     practitionerDecoded,
+                    '',
                 ),
             ).rejects.toThrowError(
                 new createError.BadRequest('Server does not support these resource and operations: {Patient: create}'),
@@ -824,7 +831,7 @@ describe('SERVER-CAPABILITIES Cases: Validating Bundle request is allowed given 
             );
 
             await expect(
-                bundleHandlerExcludePatient.processTransaction(bundleRequestJsonCreatePatient, practitionerDecoded),
+                bundleHandlerExcludePatient.processTransaction(bundleRequestJsonCreatePatient, practitionerDecoded, ''),
             ).rejects.toThrowError(
                 new createError.BadRequest('Server does not support these resource and operations: {Patient: create}'),
             );
@@ -871,6 +878,7 @@ describe('SERVER-CAPABILITIES Cases: Validating Bundle request is allowed given 
             const result = await bundleHandlerSpecialResourcePatient.processTransaction(
                 bundleRequestJsonCreatePatient,
                 practitionerDecoded,
+                '',
             );
 
             // CHECK
@@ -900,6 +908,7 @@ describe('SERVER-CAPABILITIES Cases: Validating Bundle request is allowed given 
             const result = await bundleHandlerNoExclusion.processTransaction(
                 bundleRequestJsonCreatePatient,
                 practitionerDecoded,
+                '',
             );
 
             // CHECK

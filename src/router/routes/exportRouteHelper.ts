@@ -22,6 +22,7 @@ export default class ExportRouteHelper {
             );
         }
         const { userIdentity } = res.locals;
+        const { tenantId } = req;
 
         const initiateExportRequest: InitiateExportRequest = {
             requesterUserId: userIdentity.sub,
@@ -34,6 +35,7 @@ export default class ExportRouteHelper {
                     : undefined,
             type: isString(req.query._type) ? req.query._type : undefined,
             groupId: isString(req.params.id) ? req.params.id : undefined,
+            tenantId,
         };
         return initiateExportRequest;
     }
@@ -43,17 +45,19 @@ export default class ExportRouteHelper {
         exportType: ExportType,
         queryParams: { outputFormat?: string; since?: string; type?: string },
         groupId?: string,
+        tenantId?: string,
     ) {
         const { outputFormat, since, type } = queryParams;
         const url = new URL(baseUrl);
+        const tenantPath = tenantId ? `/tenant/${tenantId}` : '';
         if (exportType === 'system') {
-            url.pathname = '/$export';
+            url.pathname = `${tenantPath}/$export`;
         }
         if (exportType === 'patient') {
-            url.pathname = '/Patient/$export';
+            url.pathname = `${tenantPath}/Patient/$export`;
         }
         if (exportType === 'group') {
-            url.pathname = `/Group/${groupId}/$export`;
+            url.pathname = `${tenantPath}/Group/${groupId}/$export`;
         }
         if (outputFormat) {
             url.searchParams.append('_outputFormat', outputFormat);

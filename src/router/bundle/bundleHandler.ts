@@ -97,7 +97,7 @@ export default class BundleHandler implements BundleHandlerInterface {
         return bundleEntriesNotSupported;
     }
 
-    async processTransaction(bundleRequestJson: any, userIdentity: KeyValueMap) {
+    async processTransaction(bundleRequestJson: any, userIdentity: KeyValueMap, tenantId: string) {
         const startTime = new Date();
 
         await validateResource(this.validators, bundleRequestJson);
@@ -138,7 +138,7 @@ export default class BundleHandler implements BundleHandlerInterface {
             );
         }
 
-        const bundleServiceResponse = await this.bundleService.transaction({ requests, startTime });
+        const bundleServiceResponse = await this.bundleService.transaction({ requests, startTime, tenantId });
         if (!bundleServiceResponse.success) {
             if (bundleServiceResponse.errorType === 'SYSTEM_ERROR') {
                 throw new createError.InternalServerError(bundleServiceResponse.message);
@@ -183,6 +183,10 @@ export default class BundleHandler implements BundleHandlerInterface {
             bundleServiceResponse.batchReadWriteResponses[index] = entryResponse;
         });
 
-        return BundleGenerator.generateTransactionBundle(this.serverUrl, bundleServiceResponse.batchReadWriteResponses);
+        return BundleGenerator.generateTransactionBundle(
+            this.serverUrl,
+            tenantId,
+            bundleServiceResponse.batchReadWriteResponses,
+        );
     }
 }
