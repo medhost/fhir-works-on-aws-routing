@@ -227,7 +227,7 @@ export default class GenericResourceRoute {
                     const { id } = req.params;
                     const { body, tenantId } = req;
 
-                    if (body.id === null || body.id !== id) {
+                    if (body.id && body.id !== id) {
                         throw new createError.BadRequest(
                             `Can not update resource with ID[${id}], while the given request payload has an ID[${body.id}]`,
                         );
