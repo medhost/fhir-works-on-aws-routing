@@ -77,6 +77,7 @@ export function generateServerlessRouter(
             res.locals.userIdentity = await fhirConfig.auth.authorization.verifyAccessToken({
                 ...requestInformation,
                 accessToken: req.headers.authorization,
+                tenantId: req.tenantId,
             });
             next();
         } catch (e) {
